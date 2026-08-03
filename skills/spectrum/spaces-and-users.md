@@ -1,18 +1,51 @@
-# Spaces and users
+# Spectrum spaces and users
 
-A Space is the conversation boundary. Use it to send content, bracket typing with `responding`, resolve participants, inspect display names and avatars, and create direct or group conversations through documented provider capabilities.
+A **Space** is a conversation. A **User** is a platform participant. Both carry a platform tag and can be narrowed back to provider-specific types.
 
-Current operations to account for:
+## Space operations
 
-- send one or more content items;
-- start and stop responding/typing safely;
-- add or edit supported conversation state;
-- retrieve and update avatars;
-- retrieve display names;
-- resolve participants to Users;
-- create direct and group spaces;
-- preserve resource IDs and thread IDs as distinct opaque values.
+```ts
+await space.send("Hello", attachment("./photo.jpg"));
+await space.startTyping();
+await space.stopTyping();
 
-Provider feature degradation must be explicit. Do not silently turn a threaded reply, group mutation, or native app card into unrelated content unless the official provider docs define that fallback.
+await space.responding(async () => {
+  const result = await generateResponse();
+  await space.send(result);
+});
+```
+
+`responding()` guarantees the stop-typing signal runs even when the callback throws. Provider-specific unsupported operations raise `UnsupportedError`; best-effort features such as typing may silently no-op where documented.
+
+Universal space actions include:
+
+- `send(...content)`;
+- `responding(fn)`;
+- `startTyping()` / `stopTyping()`;
+- `read(message)`;
+- `edit(message, content)`;
+- `unsend(message)`;
+- `rename(name)`;
+- `avatar(input)` / `getAvatar()`;
+- `add(memberOrMembers)`;
+- `remove(memberOrMembers)`;
+- `leave()`;
+- `getMembers()` and provider-defined getters.
+
+## Resolve users and create spaces
+
+```ts
+import { imessage } from "spectrum-ts/providers/imessage";
+
+const im = imessage(app);
+const alice = await im.user("+15551111111");
+const bob = await im.user("+15552222222");
+
+const dm = await im.space.create(alice);
+const group = await im.space.create([alice, bob]);
+const existing = await im.space.get("any;-;+15551111111");
+```
+
+Platform IDs are provider-specific. For iMessage, use an E.164 phone number or email when resolving a user; do not assume the same identifier format works for Slack, Telegram, or WhatsApp.
 
 Official source: <https://photon.codes/docs/spectrum-ts/spaces-and-users>

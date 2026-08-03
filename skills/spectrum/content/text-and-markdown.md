@@ -1,12 +1,40 @@
-# Text and Markdown
+# Spectrum text and Markdown
 
-- Use plain text for maximum portability.
-- Use the Markdown builder for bold, italic, strikethrough, code, and other documented formatting.
-- Let providers translate Markdown into their native formatting model.
-- Escape user-generated Markdown when literal text is required.
-- Handle unsupported formatting as documented; do not promise identical rendering.
-- Streaming text has a start/update/complete lifecycle and must be completed or aborted.
+## Plain text
 
-Official sources:
-- <https://photon.codes/docs/spectrum-ts/content/text>
-- <https://photon.codes/docs/spectrum-ts/content/markdown>
+```ts
+import { text } from "spectrum-ts";
+await space.send(text("Hello"));
+await space.send("Hello");
+```
+
+## Markdown
+
+```ts
+import { markdown } from "spectrum-ts";
+await space.send(markdown("**Bold** and _italic_."));
+```
+
+Spectrum supports CommonMark plus GFM tables and strikethrough. Providers translate to native formatting: Telegram uses HTML parsing and remote iMessage uses UTF-16 formatting ranges. Unsupported providers receive readable plain text. Inbound formatting always surfaces as `text`, not `markdown`.
+
+## Streaming
+
+Both `text()` and `markdown()` accept:
+
+- a Vercel AI SDK `streamText()` result or its `.textStream`;
+- an `AsyncIterable`;
+- a `ReadableStream`;
+- a custom stream with `{ extract(chunk) }`.
+
+```ts
+const result = aiStreamText({ model, prompt });
+await space.send(text(result));
+
+await space.send(markdown(customStream, {
+  extract: (chunk) => chunk.delta?.text ?? null,
+}));
+```
+
+Remote iMessage sends the first chunk then edits in place. Telegram private chats can animate a draft. Providers without streaming wait and send the accumulated result once. A stream source is single-use and cannot be sent twice.
+
+Official sources: <https://photon.codes/docs/spectrum-ts/content/text> and <https://photon.codes/docs/spectrum-ts/content/markdown>
