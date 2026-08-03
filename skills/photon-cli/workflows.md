@@ -71,7 +71,7 @@ Credentials are separate per backend.
 6. Update all secret stores and redeploy.
 7. Verify each integration with a read-only SDK or API operation.
 
-Do not use rotation to discover an existing secret. There is no documented read-only `projects secret` command.
+Do not use rotation to discover an existing secret. The current CLI does not expose a read-only project-secret retrieval subcommand.
 
 ## Paid upgrade or billing portal
 

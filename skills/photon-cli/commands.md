@@ -62,7 +62,7 @@ photon projects delete [id] -y    # skips confirmation
 photon projects regenerate-secret [id]  # invalidates old secret
 ```
 
-There is no documented read-only `projects secret` command. Obtain credentials through the current project or dashboard flow. Treat regeneration as a credential rotation.
+The current CLI does not expose a read-only project-secret retrieval subcommand. Obtain credentials through the current project or dashboard flow. Treat regeneration as a credential rotation.
 
 ## Subscription routing
 
