@@ -1,24 +1,46 @@
-# Voice provider
+# Spectrum Voice over SIP
 
-Spectrum Voice uses SIP with Spectrum iMessage lines and is separate from messaging Spaces.
+Voice calls are SIP routes attached to project-owned iMessage lines. They are not Spectrum message Spaces and do not appear on `app.messages`. WhatsApp numbers cannot be used.
 
-## Outbound
+## Outbound calls
 
-- Configure a SIP application.
-- Select the documented Spectrum iMessage line.
-- Place calls through the current outbound call interface.
-- Handle ringing, answered, ended, and failed lifecycle events.
+Configure the SIP application or trunk:
 
-## Inbound
+| Setting | Value |
+|---|---|
+| Server | `sip.spectrum.photon.codes` |
+| TLS server port | `5061` |
+| TCP server port | `5060` |
+| Username | Spectrum project ID |
+| Password | Spectrum project secret |
+| Registration | Off; Spectrum is not a registrar |
+| Caller ID / From | An iMessage line owned by the project |
 
-- Register an inbound route.
-- Validate route and transport configuration.
-- Receive and handle calls independently from `app.messages`.
-- Clean up call resources on failure or shutdown.
+Prefer TLS with certificate verification. UDP SIP is unsupported. TCP remains supported but does not encrypt signaling. Audio uses RTP and requires the application's UDP RTP range through the firewall.
 
-Do not represent a voice call as a normal text-message Space.
+Use a full international destination such as `+14155550123`. A `403` commonly means the From number is missing or not owned by the authenticated project.
 
-Official sources:
+## Inbound calls
 
-- <https://photon.codes/docs/spectrum-ts/providers/voice/outbound-calls>
-- <https://photon.codes/docs/spectrum-ts/providers/voice/inbound-calls>
+Register an inbound route in the dashboard for the exact project and iMessage line. Outbound credentials do not create this route.
+
+Example routes:
+
+```text
+sips:agent@voice.example.com:5061
+sip:agent@voice.example.com:5060
+```
+
+The endpoint must be publicly reachable. Configure its listening transport, port, TLS certificate when using `sips:`, and UDP RTP media range. Optional inbound SIP Digest username/password belong to the receiving application, not the Spectrum project credentials.
+
+## Production checks
+
+- Project ID and secret match the line-owning project.
+- SIP registration is disabled.
+- Transport is TLS or TCP, never UDP.
+- Caller ID is an owned iMessage line.
+- Public inbound route matches the receiving listener.
+- SIP and RTP firewall/NAT rules permit both signaling and two-way audio.
+- Business-profile registration is recommended for outbound reputation but is not required and does not replace inbound route registration.
+
+Official sources: <https://photon.codes/docs/spectrum-ts/providers/voice/outbound-calls> and <https://photon.codes/docs/spectrum-ts/providers/voice/inbound-calls>

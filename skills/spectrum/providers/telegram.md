@@ -1,14 +1,35 @@
-# Telegram provider
+# Spectrum Telegram provider
 
-- Install and configure the current Telegram provider.
-- Keep the bot token in a secret store.
-- Register the webhook through the documented setup flow.
-- Resolve or create supported conversations.
-- Use generic Spectrum content when supported.
-- Narrow for Telegram-specific message fields, reactions, or reply behavior.
-- Handle unsupported features without fabricating a fallback.
+## Setup
 
-Official sources:
+```ts
+import { telegram } from "spectrum-ts/providers/telegram";
 
-- <https://photon.codes/docs/spectrum-ts/providers/telegram/setup>
-- <https://photon.codes/docs/spectrum-ts/providers/telegram/conversations-and-features>
+telegram.config({
+  botToken: process.env.TELEGRAM_BOT_TOKEN!,
+  webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
+});
+```
+
+Config fallbacks:
+
+- `SPECTRUM_TELEGRAM_BOT_TOKEN`
+- `SPECTRUM_TELEGRAM_WEBHOOK_SECRET`
+- `SPECTRUM_TELEGRAM_BASE_URL`
+
+In cloud mode, Spectrum registers the Fusor webhook automatically. In direct/local deployment, register the Telegram webhook yourself.
+
+## Conversations
+
+```ts
+const tg = telegram(app);
+const user = await tg.user("123456789");
+const dm = await tg.space.create(user);
+const existingGroup = await tg.space.get(process.env.TELEGRAM_CHAT_ID!);
+```
+
+Bots can start private conversations but cannot create groups. Numeric chat IDs must be stringified.
+
+Supported features include text, Markdown rendered as Telegram HTML, streaming drafts in private chats, media, reactions, replies, typing, edits, and raw Bot API calls with `custom({ method, params })`.
+
+Official sources: <https://photon.codes/docs/spectrum-ts/providers/telegram/setup> and <https://photon.codes/docs/spectrum-ts/providers/telegram/conversations-and-features>
