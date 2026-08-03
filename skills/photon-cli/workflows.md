@@ -1,39 +1,105 @@
 # Photon CLI workflows
 
-Each workflow ends with a non-destructive verification.
+Each workflow ends with a non-destructive verification. Never rotate credentials, delete resources, add paid lines, or open checkout without the user's explicit authorization.
 
 ## Install and authenticate
 
-Run the CLI through a documented installation mode, complete device authorization, then run `photon whoami --json`.
+```bash
+npx @photon-ai/cli@latest --version
+npx @photon-ai/cli login --no-browser
+npx @photon-ai/cli whoami
+```
+
+After browser approval, `whoami` must report the expected account and backend.
 
 ## Create a Spectrum-enabled project
 
-Run `projects create` with `--name`, `--location`, `--spectrum`, and `--json`; capture the returned project ID; verify with `projects show --json`.
+```bash
+PROJECT_ID=$(photon projects create \
+  --name "My App" \
+  --location us-east \
+  --spectrum \
+  --json | jq -r '.id')
 
-## Configure credentials
+export PHOTON_PROJECT_ID="$PROJECT_ID"
+photon projects show --json
+photon spectrum profile show --json
+```
 
-Obtain project credentials through the current dashboard/project flow. Do not rotate merely to read. Store them in a secret manager and verify with a read-only SDK/API request.
+Do not require `lines ls` to return a project-owned line as proof that creation succeeded; shared and dedicated plans expose different line resources.
 
-## Inspect resources
+## Inspect resources safely
 
-Use project show/list and Spectrum profile/users/lines/platforms/avatar read commands; finish with the relevant `--json` read.
+```bash
+photon projects show --json
+photon spectrum profile show --json
+photon spectrum users ls --json
+photon spectrum lines ls --json
+photon spectrum platforms ls --json
+photon billing show --json
+```
 
-## Upgrade or billing
-
-Explain the exact cost-bearing action and ask for confirmation. After execution, verify the current plan or billing status.
-
-## Non-default backend
-
-Set the documented backend selector, authenticate against that backend, and verify with `whoami`.
+Use this inventory before deciding whether a requested write is needed.
 
 ## CI authentication
 
-Use the documented CI token, disable interactivity, and verify with a read-only command. Never print the token.
+```bash
+PHOTON_TOKEN="$PHOTON_TOKEN" \
+PHOTON_PROJECT_ID="$PHOTON_PROJECT_ID" \
+photon projects show --json
+```
+
+Set the token and project ID through the CI secret and variable system. Confirm `photon env current`; a backend mismatch can look like an invalid token.
+
+## Non-default backend
+
+```bash
+photon login --api-host https://staging-app.photon.codes --no-browser
+PHOTON_API_HOST=https://staging-app.photon.codes photon whoami
+PHOTON_API_HOST=https://staging-app.photon.codes photon projects ls --json
+```
+
+Credentials are separate per backend.
 
 ## Rotate a project secret safely
 
-Confirm that the user intends to invalidate the current secret. Inventory every deployment using it, run `projects regenerate-secret`, update all secret stores, redeploy, and verify before removing rollback access.
+1. Confirm the user intends to invalidate the current secret.
+2. Inventory every deployment and secret store using it.
+3. Prepare a coordinated rollout and rollback path.
+4. Run `photon projects regenerate-secret [id]`.
+5. Capture the new value without logging it.
+6. Update all secret stores and redeploy.
+7. Verify each integration with a read-only SDK or API operation.
 
-## Unauthorized or project-not-found
+Do not use rotation to discover an existing secret. There is no documented read-only `projects secret` command.
 
-Check token/backend precedence, selected project ID, account membership, and JSON error output. Do not create a replacement project until the mismatch is understood.
+## Paid upgrade or billing portal
+
+```bash
+photon billing plans
+photon billing show --json
+# After explicit confirmation only:
+photon projects upgrade business --qty 1 --no-browser --json
+# or
+photon billing manage --no-browser
+```
+
+Present the exact tier, quantity, and action before execution. Downgrade, cancellation, and payment-method changes happen through the Stripe Portal.
+
+## Troubleshoot unauthorized or project-not-found
+
+1. Run `photon env current`.
+2. Run `photon whoami` against the same backend.
+3. Check `--project` and `PHOTON_PROJECT_ID` precedence.
+4. Inspect `photon config show --json` without exposing secrets.
+5. Verify project membership with `photon projects ls --json`.
+6. Reauthenticate only if the session is expired.
+
+Do not create a replacement project until the mismatch is understood.
+
+Official sources:
+
+- <https://photon.codes/docs/cli/authentication>
+- <https://photon.codes/docs/cli/projects>
+- <https://photon.codes/docs/cli/spectrum>
+- <https://photon.codes/docs/cli/billing>
