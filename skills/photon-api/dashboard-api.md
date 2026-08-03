@@ -1,25 +1,37 @@
-# Dashboard API
+# Photon Dashboard API
 
-Use the current Dashboard OpenAPI as the source of truth. Do not derive Dashboard endpoints by translating CLI commands.
+The Dashboard API manages account-owned projects and implements the CLI device-login flow. Its OpenAPI source is `api-reference/dashboard-openapi.json` in `photon-hq/docs`.
 
-## Use this surface for
+## Endpoint inventory
 
-- account and dashboard-level project operations;
-- device-login flows;
-- operations explicitly described by the Dashboard OpenAPI.
+| Method | Path | Authentication | Purpose |
+|---|---|---|---|
+| `GET` | `/api/projects/` | Bearer | List projects visible to the signed-in account. |
+| `POST` | `/api/projects/` | Bearer | Create a project. |
+| `GET` | `/api/projects/{id}` | Bearer | Get one project. |
+| `POST` | `/api/auth/device/code` | None | Start RFC 8628-style device authorization. |
+| `POST` | `/api/auth/device/token` | None | Poll for approval and receive the access token. |
 
-## Prefer the CLI when
+## Project creation
 
-- a person is authenticating interactively;
-- the workflow already has a documented `photon` command;
-- browser/device authorization is required.
+The current body includes project name plus optional location and product selections documented by the schema. The response project can include `id`, `name`, `location`, platform state, `spectrumProjectId`, and `projectSecret` where the authenticated flow is allowed to expose it.
 
-## Implementation rules
+Treat `projectSecret` as a server credential. Capture it only into a secret store and redact it from output. Do not infer CLI flags directly from OpenAPI field names; the CLI command surface is separately documented.
 
-1. Inspect the current schema before coding an endpoint.
-2. Generate or validate request and response types from OpenAPI.
-3. Keep tokens in server-side secret storage.
-4. Require confirmation before purchase, subscription, cancellation, deletion, or credential rotation.
-5. Do not copy endpoint paths from old skills or CLI output.
+## Device login
 
-Official OpenAPI: <https://photon.codes/docs/api-reference/dashboard-openapi.json>
+```text
+POST /api/auth/device/code
+→ device_code, user_code, verification_uri, verification_uri_complete, expires_in, interval
+
+POST /api/auth/device/token
+→ authorization_pending | slow_down | expired_token | access_denied | access token
+```
+
+Poll no faster than the returned interval. Increase the delay when the server returns `slow_down`, stop after expiry, and never request the user's dashboard password.
+
+## Choosing Dashboard API versus CLI
+
+Use the CLI for interactive setup or ordinary scripts. Use the Dashboard API when implementing a custom authenticated client, device-flow integration, or account-level project management. Do not replace the Spectrum Basic-auth project API with a Dashboard bearer token unless the specific OpenAPI operation says so.
+
+Official source: <https://photon.codes/docs/api-reference/dashboard-openapi.json>

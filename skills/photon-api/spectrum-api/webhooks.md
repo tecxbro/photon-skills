@@ -1,19 +1,23 @@
+<!-- openapi-tag: webhooks -->
 # Spectrum API: webhooks
 
-Use the current `webhooks` tag to register, list, and delete project webhook endpoints.
+## Endpoint inventory
 
-- Registration returns the signing secret only where documented.
-- List responses do not include the signing secret.
-- If a signing secret is lost, delete and re-register the endpoint when that is the documented recovery path.
-- Treat deletion and replacement as configuration changes that can interrupt delivery.
-- Runtime verification, retry, and deduplication belong in the [`photon-webhooks`](../../photon-webhooks/SKILL.md) skill.
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/projects/{projectId}/webhooks/` | List registrations oldest first. Signing secrets are omitted. |
+| `POST` | `/projects/{projectId}/webhooks/` | Register a public HTTPS URL. Returns the signing secret once. |
+| `DELETE` | `/projects/{projectId}/webhooks/{webhookId}/` | Delete a registration. |
 
-Example list operation:
-
-```text
-GET /projects/{projectId}/webhooks/
+```bash
+curl --user "$PROJECT_ID:$PROJECT_SECRET" \
+  "https://spectrum.photon.codes/projects/$PROJECT_ID/webhooks/"
 ```
 
-Never claim a signing secret can be retrieved from a list response.
+Registration rejects malformed URLs, duplicates, plain HTTP, redirects, private/link-local/metadata addresses, and unreachable destinations according to the current webhook policy. Persist the returned secret immediately. List responses cannot recover it.
 
-Official OpenAPI: <https://spectrum.photon.codes/openapi/json>
+There is no in-place secret-read endpoint. To rotate, deploy a newly registered secret and retire the old registration through a controlled replacement flow.
+
+Use the separate `photon-webhooks` skill for signature verification, delivery retries, idempotency, and event payloads.
+
+Official API page: <https://photon.codes/docs/api-reference/webhooks/list-webhooks>

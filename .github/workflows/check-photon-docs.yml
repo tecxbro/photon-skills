@@ -6,7 +6,7 @@ on:
       - "skills/**"
       - "docs/photon-docs-coverage.json"
       - "docs/photon-docs-coverage.md"
-      - "scripts/check-photon-docs-coverage.mjs"
+      - "scripts/check-photon-*.mjs"
       - ".github/workflows/check-photon-docs.yml"
   schedule:
     - cron: "17 15 * * 1"
@@ -23,8 +23,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check documentation ownership and skill structure
+      - name: Check documentation ownership, structure, content, and stale strings
         run: node scripts/check-photon-docs-coverage.mjs
+      - name: Check Spectrum OpenAPI tag ownership
+        run: node scripts/check-photon-openapi.mjs
       - name: Check internal Markdown links
         run: |
           node --input-type=module <<'NODE'
