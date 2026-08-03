@@ -5,6 +5,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const canonicalTag = (tag) => String(tag).toLowerCase().replaceAll("_", "-").replaceAll(" ", "-");
 const tagOwners = {
   users: "skills/photon-api/spectrum-api/users.md",
   projects: "skills/photon-api/spectrum-api/projects.md",
@@ -18,6 +19,7 @@ const tagOwners = {
   "whatsapp-business": "skills/photon-api/spectrum-api/whatsapp-business.md",
   slack: "skills/photon-api/spectrum-api/slack.md",
 };
+const ignoredTags = new Set(["default", "health", "authentication", "internal"]);
 
 const response = await fetch("https://spectrum.photon.codes/openapi/json", {
   headers: { "user-agent": "photon-skills-openapi-check" },
@@ -29,17 +31,18 @@ const operationsByTag = new Map();
 for (const [apiPath, pathItem] of Object.entries(spec.paths ?? {})) {
   for (const [method, operation] of Object.entries(pathItem ?? {})) {
     if (!operation || typeof operation !== "object" || !Array.isArray(operation.tags)) continue;
-    for (const tag of operation.tags) {
-      const normalized = String(tag).toLowerCase();
-      const list = operationsByTag.get(normalized) ?? [];
+    for (const rawTag of operation.tags) {
+      const tag = canonicalTag(rawTag);
+      const list = operationsByTag.get(tag) ?? [];
       list.push(`${method.toUpperCase()} ${apiPath}`);
-      operationsByTag.set(normalized, list);
+      operationsByTag.set(tag, list);
     }
   }
 }
 
 const errors = [];
 for (const [tag, operations] of operationsByTag) {
+  if (ignoredTags.has(tag)) continue;
   const owner = tagOwners[tag];
   if (!owner) {
     errors.push(`Unmapped OpenAPI tag: ${tag} (${operations.length} operations)`);

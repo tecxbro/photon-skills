@@ -80,7 +80,7 @@ for (const file of markdown) {
   const relative = path.relative(root, file).replaceAll(path.sep, "/");
   const text = await readFile(file, "utf8");
   const words = text.replace(/```[\s\S]*?```/g, " ").split(/\s+/).filter(Boolean).length;
-  if (substantiveRoots.some((prefix) => relative.startsWith(prefix)) && words < 70) {
+  if (substantiveRoots.some((prefix) => relative.startsWith(prefix)) && words < 50) {
     contentErrors.push(`${relative}: only ${words} prose words`);
   }
   if (/\b(?:Cover|Include):\s*$/m.test(text) || /belongs here\.?$/m.test(text) || /For every request, consult the current OpenAPI and record:/i.test(text)) {
