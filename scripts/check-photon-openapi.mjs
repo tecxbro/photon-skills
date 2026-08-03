@@ -53,6 +53,7 @@ for (const [tag, operations] of operationsByTag) {
   if (!/\b(GET|POST|PUT|PATCH|DELETE)\b/.test(text)) errors.push(`${owner}: no HTTP method guidance`);
   if (!/\/projects\/\{projectId\}|OpenAPI/.test(text)) errors.push(`${owner}: no project path or live OpenAPI guidance`);
   console.log(`${tag}: ${operations.length} operations -> ${owner}`);
+  for (const operation of operations.sort()) console.log(`  ${operation}`);
 }
 
 for (const tag of Object.keys(tagOwners)) {
