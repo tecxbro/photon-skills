@@ -1,10 +1,93 @@
 # WhatsApp Business messages
 
-- Use documented recipient formatting.
-- Cover text, media, location, contact cards, reactions, replies, and mark-read.
-- Store returned message IDs unchanged.
-- Pass abort signals and deadlines where supported.
-- Use callback data only for its documented purpose.
-- Do not send outside policy or messaging-window constraints.
+Every outbound message uses `client.messages.send(params)`. `params` contains common fields such as `to`, optional `replyTo`, and optional `bizOpaqueCallbackData`, plus exactly one content key.
+
+## Recipient and text
+
+`to` accepts a WhatsApp phone ID in international format, with or without the leading `+`.
+
+```ts
+await client.messages.send({
+  to: "+15551234567",
+  text: { body: "See https://photon.codes", previewUrl: true },
+});
+```
+
+## Media
+
+```ts
+const { mediaId } = await client.media.upload({
+  file: await readFile("photo.jpg"),
+  mimeType: "image/jpeg",
+  filename: "photo.jpg",
+});
+
+await client.messages.send({
+  to,
+  image: { id: mediaId, caption: "Here is the photo" },
+});
+
+await client.messages.send({
+  to,
+  document: { link: "https://example.com/report.pdf", filename: "report.pdf" },
+});
+```
+
+Supported content keys include `image`, `video`, `audio`, `document`, and `sticker`. Media references use either `id` or a public `link`; stickers use WebP and do not take captions.
+
+## Location and contacts
+
+```ts
+await client.messages.send({
+  to,
+  location: {
+    latitude: 37.422,
+    longitude: -122.084,
+    name: "Googleplex",
+    address: "1600 Amphitheatre Pkwy",
+  },
+});
+
+await client.messages.send({
+  to,
+  contacts: [{
+    name: { formattedName: "Alice Example", firstName: "Alice" },
+    phones: [{ phone: "+15559876543", type: "MOBILE" }],
+    emails: [{ email: "alice@example.com" }],
+    addresses: [],
+    urls: [],
+  }],
+});
+```
+
+## Reactions, replies, and read state
+
+```ts
+await client.messages.send({
+  to,
+  reaction: { messageId: inboundId, emoji: "❤️" },
+});
+
+await client.messages.send({
+  to,
+  replyTo: inboundId,
+  text: "Replying to your message",
+});
+
+await client.messages.markRead(inboundId);
+```
+
+Use an empty reaction emoji to remove a reaction.
+
+## Result and cancellation
+
+```ts
+const { messageId, messageStatus } = await client.messages.send(
+  { to, text: "Hello" },
+  { signal: abortController.signal },
+);
+```
+
+Store `messageId` when you need status tracking, reply, or reaction correlation. Use `bizOpaqueCallbackData` for your own opaque status-correlation data, not secrets.
 
 Official source: <https://photon.codes/docs/advanced-kits/whatsapp/messages>
