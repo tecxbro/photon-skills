@@ -1,112 +1,64 @@
-# Skills
+# Photon Agent Skills
 
-[![skills.sh](https://img.shields.io/badge/skills.sh-photon--hq%2Fskills-blue)](https://skills.sh/photon-hq/skills)
+[![skills.sh](https://img.shields.io/badge/skills.sh-tecxbro%2Fphoton--skills-blue)](https://skills.sh/tecxbro/photon-skills)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/photon-hq/skills)](https://github.com/photon-hq/skills)
+[![GitHub stars](https://img.shields.io/github/stars/tecxbro/photon-skills)](https://github.com/tecxbro/photon-skills)
 
-Agent skills for [Photon](https://photon.codes/spectrum)'s SDKs, following the [Agent Skills](https://skills.sh/) format.
-
-```bash
-npx skills add photon-hq/skills --skill <skill-name>
-```
-
----
-
-## Skills
-
-| Skill | Packages | Description |
-| :--- | :--- | :--- |
-| [`imessage`](./skills/imessage/SKILL.md) | `@photon-ai/imessage-kit` · `@photon-ai/advanced-imessage-kit` | Send and receive iMessages programmatically. Build AI agents, automations, and conversational apps — self-hosted or on Photon's production infrastructure. |
-| [`chat-adapter-imessage`](./skills/chat-adapter-imessage/SKILL.md) | `chat-adapter-imessage` | Connect the [Vercel AI SDK](https://sdk.vercel.ai) to iMessage. Local and remote modes, all adapter methods, and gateway events. |
-| [`buildspace-ci-cd`](./skills/buildspace-ci-cd/SKILL.md) | `photon-hq/buildspace` | Configure and troubleshoot BuildSpace reusable GitHub Actions workflows for automated releases across Rust, TypeScript, Go, and Swift. |
-| [`spectrum`](./skills/spectrum/SKILL.md) | `spectrum-ts` | Photon's unified messaging SDK for TypeScript. Write your handler once and ship across iMessage, WhatsApp Business, terminal, or a custom platform — plus production architecture patterns. |
-| [`photon-cli`](./skills/photon-cli/SKILL.md) | `@photon-ai/cli` | The `photon` CLI (alias `pho`) — a typed terminal UI for the Photon Dashboard. Authenticate, bootstrap and manage projects, handle billing/upgrades, and manage Spectrum lines, users, and platforms. |
-
----
-
-### imessage
+Agent skills for the current [Photon](https://photon.codes/docs) product surface, following the [Agent Skills](https://skills.sh/) format.
 
 ```bash
-npx skills add photon-hq/skills --skill imessage
+npx skills add tecxbro/photon-skills --skill <skill-name>
 ```
 
-Two kits, your choice of infrastructure:
+## Photon product skills
 
-- **[`@photon-ai/imessage-kit`](https://github.com/photon-hq/imessage-kit)** — Self-hosted. Runs on your Mac.
-- **[`@photon-ai/advanced-imessage-kit`](https://github.com/photon-hq/advanced-imessage-kit)** — Production infrastructure by Photon. Scales to any number of phone numbers.
+| Skill | Primary package or surface | Use it for |
+|---|---|---|
+| [`spectrum`](./skills/spectrum/SKILL.md) | `spectrum-ts` | The default for new multi-platform agents across iMessage, WhatsApp Business, Telegram, Slack, Terminal, and Voice. |
+| [`imessage`](./skills/imessage/SKILL.md) | `@photon-ai/advanced-imessage`, `@photon-ai/imessage-kit` | Choosing an iMessage stack and using current low-level or local iMessage APIs. |
+| [`whatsapp-business`](./skills/whatsapp-business/SKILL.md) | `@photon-ai/whatsapp-business` | Low-level WhatsApp Business behavior that Spectrum does not expose. |
+| [`chat-adapter-imessage`](./skills/chat-adapter-imessage/SKILL.md) | `chat-adapter-imessage` | Connecting a Chat SDK bot to iMessage through Spectrum Cloud, self-hosted Advanced iMessage, or local macOS. |
+| [`photon-webhooks`](./skills/photon-webhooks/SKILL.md) | Spectrum Webhooks | Signed inbound HTTP delivery, verification, retries, and registration. |
+| [`photon-api`](./skills/photon-api/SKILL.md) | Spectrum API and Dashboard API | HTTPS management-plane automation, curl, OpenAPI, and non-TypeScript integrations. |
+| [`photon-cli`](./skills/photon-cli/SKILL.md) | `@photon-ai/cli` | Interactive and scripted project, profile, Spectrum-resource, billing, and authentication workflows. |
+| [`heif2jpeg`](./skills/heif2jpeg/SKILL.md) | `heif2jpeg` | Converting HEIC/HEIF attachments to JPEG in Node.js-compatible runtimes. |
 
-**Covers:** sending text, images, files, effects, tapbacks, stickers, and polls · editing and unsending messages · real-time events via WebSockets · group chat management · scheduling and reminders · Find My, FaceTime, and contacts · [Photon Webhook](https://github.com/photon-hq/webhook) for HTTP event forwarding · [Photon MCP](https://github.com/photon-hq/mcp) with 67 tools at `mcp.photon.codes` · security best practices · error handling and plugins.
+## Photon engineering infrastructure
 
-### chat-adapter-imessage
+| Skill | Use it for |
+|---|---|
+| [`buildspace-ci-cd`](./skills/buildspace-ci-cd/SKILL.md) | BuildSpace reusable GitHub Actions workflows and release automation. |
 
-```bash
-npx skills add photon-hq/skills --skill chat-adapter-imessage
-```
+## Product routing
 
-Adapter that connects the [Vercel AI SDK (Chat)](https://sdk.vercel.ai) to iMessage.
+| Need | Canonical starting point |
+|---|---|
+| New agent on one or more messaging platforms | Spectrum |
+| Direct low-level iMessage feature | Current Advanced iMessage |
+| Local automation on one Mac | Open-source iMessage Kit |
+| Direct low-level WhatsApp Business feature | Current WhatsApp Business SDK |
+| Receive inbound project events over HTTP | Spectrum Webhooks |
+| Manage resources over HTTPS | Spectrum API |
+| Manage resources from a terminal | Photon CLI |
 
-**Covers:** `createiMessageAdapter` config for local and remote modes · `postMessage`, `editMessage`, `deleteMessage`, `react`, `startGatewayListener` · webhook payload types · feature matrix for Photon server capabilities.
+Spectrum is the default for new agent-oriented applications. Drop down to a low-level platform SDK only when the requested platform behavior is not exposed by Spectrum.
 
-### buildspace-ci-cd
+## Example prompts
 
-```bash
-npx skills add photon-hq/skills --skill buildspace-ci-cd
-```
+- Build an iMessage and Telegram agent with one Spectrum message loop.
+- Add Slack and Terminal providers to my Spectrum app.
+- Place an outbound call through a Spectrum iMessage line.
+- Verify Spectrum webhook signatures in a Next.js route.
+- Use current Advanced iMessage to change a group icon.
+- Send a WhatsApp Flow with the low-level WhatsApp Business SDK.
+- List project webhooks using curl and the Spectrum API.
+- Convert an inbound HEIC iMessage attachment to JPEG.
+- Authenticate the Photon CLI in CI and inspect a project without rotating credentials.
+- Configure BuildSpace release automation for a TypeScript monorepo.
 
-Configure and debug [BuildSpace](https://github.com/photon-hq/buildspace)-powered release automation using reusable GitHub Actions workflows and blocks.
+## Documentation freshness
 
-**Covers:** workflow selection by project type (Rust, TypeScript, Go, Swift) · required inputs, secrets, and permissions · label-gated release triggers · monorepo handling with topological sorting · cross-platform artifact builds · Homebrew tap and Jamf publishing · README drift detection · dry-run validation · troubleshooting.
-
-### spectrum
-
-```bash
-npx skills add photon-hq/skills --skill spectrum
-```
-
-[`spectrum-ts`](https://github.com/photon-hq/spectrum-ts) is Photon's unified messaging SDK for TypeScript. Write your handler logic once against a single `app.messages` stream and ship it across iMessage, WhatsApp Business, your terminal, or a custom platform you build yourself.
-
-**Covers:** installation and the `Spectrum()` app instance · core primitives (Message, Space, User, Platform provider) · receiving messages and narrowing content (text, attachment, voice, contact, richlink, reaction, poll, group, custom) · the full content builder family · spaces, typing indicators, `responding` · reactions, tapbacks, and threaded replies · platform narrowing · built-in providers (iMessage cloud/local/dedicated with message effects, Terminal TUI, WhatsApp Business 1:1) · custom event streams and graceful shutdown · authoring custom platforms with `definePlatform` · production architecture patterns (debounce pipeline, in-flight cancellation, carry-forward, idempotent retries, per-resource memory, job-failure audit log).
-
-### photon-cli
-
-```bash
-npx skills add photon-hq/skills --skill photon-cli
-```
-
-The [`photon`](https://www.npmjs.com/package/@photon-ai/cli) CLI (alias `pho`) is a typed terminal UI for the [Photon Dashboard](https://app.photon.codes/).
-
-**Covers:** the device-authorization login flow (`login` / `logout` / `whoami` / `auth status`) · bootstrapping projects (`projects create` → id, `regenerate-secret` for the Spectrum secret, `show` / `list` / `rename` / `delete` / `open`) · billing and upgrades (`billing plans/show/checkout/manage`, `projects upgrade` to the pro/business/enterprise tiers) · Spectrum resources on a project (`spectrum lines/users/platforms/profile/avatar`) · config and environment resolution (`PHOTON_PROJECT_ID`, `PHOTON_TOKEN`, `PHOTON_API_HOST`, credentials storage, multi-backend) · end-to-end workflows including free vs. business (dedicated line).
-
----
-
-## Usage
-
-Skills are automatically picked up by supported agents once installed — Cursor, Claude Code, Copilot, OpenCode, and [25+ others](https://skills.sh/).
-
-**Try asking your agent:**
-
-- *Build an iMessage AI agent that auto-replies to group messages*
-- *Send a scheduled message to a contact every morning at 9am*
-- *Connect my Next.js AI chatbot to iMessage using the Vercel AI SDK*
-- *Set up a webhook to receive iMessage events on my server*
-- *Give my Claude agent access to iMessage via MCP*
-- *Send an iMessage using curl from my Python script*
-- *Set up BuildSpace release automation for my TypeScript monorepo*
-- *Build a multi-platform agent with Spectrum that handles iMessage, WhatsApp, and a terminal test harness from one handler*
-- *Design the message-handling pipeline for my Spectrum agent — debouncing bursts, cancellation, idempotent retries*
-- *Log in to Photon, create a project, and tell me its id and secret*
-- *How many Spectrum lines does my project have, and how do I upgrade it to a business line?*
-
----
-
-## Ecosystem
-
-| Project | Description |
-| :--- | :--- |
-| [Photon Webhook](https://github.com/photon-hq/webhook) | Forward iMessage events to any HTTP endpoint, signed with HMAC-SHA256 — [webhook.photon.codes](https://webhook.photon.codes/) |
-| [Photon MCP](https://github.com/photon-hq/mcp) | 67 MCP tools for iMessage — [mcp.photon.codes](https://mcp.photon.codes) |
-| [HTTP Proxy](https://github.com/photon-hq/advanced-imessage-http-proxy) | RESTful API for iMessage with curl access and Swagger docs — [imessage-swagger.photon.codes](https://imessage-swagger.photon.codes/swagger) |
-| [Photon](https://photon.codes/spectrum) | Production iMessage infrastructure — API keys and server URLs |
+The canonical coverage map is [`docs/photon-docs-coverage.json`](./docs/photon-docs-coverage.json). The drift checker fails when a current Photon documentation page has no owning skill file, an owner file is missing, or a removed page remains marked current.
 
 ## License
 

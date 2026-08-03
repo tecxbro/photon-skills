@@ -1,0 +1,56 @@
+name: Check Photon documentation coverage
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+      - "docs/photon-docs-coverage.json"
+      - "docs/photon-docs-coverage.md"
+      - "scripts/check-photon-docs-coverage.mjs"
+      - ".github/workflows/check-photon-docs.yml"
+  schedule:
+    - cron: "17 15 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check documentation ownership and skill structure
+        run: node scripts/check-photon-docs-coverage.mjs
+      - name: Check internal Markdown links
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile, readdir, access } from "node:fs/promises";
+          import path from "node:path";
+          async function files(dir) {
+            const out = [];
+            for (const entry of await readdir(dir, { withFileTypes: true })) {
+              const current = path.join(dir, entry.name);
+              if (entry.isDirectory()) out.push(...await files(current));
+              else if (current.endsWith(".md")) out.push(current);
+            }
+            return out;
+          }
+          const markdown = ["README.md", ...await files("skills"), ...await files("docs")];
+          const broken = [];
+          for (const file of markdown) {
+            const text = await readFile(file, "utf8");
+            for (const match of text.matchAll(/\[[^\]]*\]\((\.\.?\/[^)#]+)(?:#[^)]+)?\)/g)) {
+              const target = path.resolve(path.dirname(file), match[1]);
+              try { await access(target); } catch { broken.push(`${file} -> ${match[1]}`); }
+            }
+          }
+          if (broken.length) {
+            console.error(broken.join("\n"));
+            process.exit(1);
+          }
+          console.log("Broken internal Markdown links: 0");
+          NODE

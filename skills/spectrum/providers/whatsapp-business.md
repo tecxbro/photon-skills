@@ -1,33 +1,15 @@
-# WhatsApp Business provider
+# Spectrum WhatsApp Business provider
 
-> TypeScript samples below — the 1:1-only constraint is a platform feature.
+Use the Spectrum provider for unified agent behavior on the official WhatsApp Business Cloud API.
 
-```ts
-import { whatsappBusiness } from "spectrum-ts/providers/whatsapp-business";
-```
+- Configure current Meta credentials and webhook setup.
+- Model the documented 1:1 conversation behavior.
+- Resolve users before starting a conversation.
+- Review support for generic text, media, replies, reactions, read state, and other content on the current provider pages.
+- Treat unsupported generic features explicitly.
+- Route to [`../../whatsapp-business/SKILL.md`](../../whatsapp-business/SKILL.md) when the request needs low-level templates, interactive messages, product lists, Flows, media lifecycle, or resumable provider events beyond Spectrum’s surface.
 
-Wraps the official WhatsApp Business Cloud API. Reactions and threaded replies map to native WhatsApp features. **1:1 only** — `space(userA, userB)` throws.
+Official sources:
 
-## Config
-
-```ts
-whatsappBusiness.config({
-  accessToken: "...",       // permanent or system-user token from Meta for Developers
-  phoneNumberId: "...",     // sender phone number ID
-  appSecret: "...",         // verifies webhook payload signatures
-});
-```
-
-Find these values in your WhatsApp Business app settings on [Meta for Developers](https://developers.facebook.com/).
-
-## Starting a conversation
-
-Resolve a user by their WhatsApp phone number (international format, digits only):
-
-```ts
-const wa = whatsappBusiness(app);
-const customer = await wa.user("15551234567");
-const space = await wa.space(customer);
-
-await space.send("Thanks for reaching out.");
-```
+- <https://photon.codes/docs/spectrum-ts/providers/whatsapp-business/setup>
+- <https://photon.codes/docs/spectrum-ts/providers/whatsapp-business/conversations>

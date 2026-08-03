@@ -1,96 +1,39 @@
-# Workflows
+# Photon CLI workflows
 
-End-to-end recipes that combine the commands. For per-command detail see [`commands.md`](./commands.md) and [`spectrum.md`](./spectrum.md); for env vars see [`environment.md`](./environment.md).
+Each workflow ends with a non-destructive verification.
 
-## Authenticate + bootstrap a project
+## Install and authenticate
 
-The standard "from zero" sequence:
+Run the CLI through a documented installation mode, complete device authorization, then run `photon whoami --json`.
 
-```bash
-photon login                          # opens browser, waits for approval
-photon whoami                         # confirm you're signed in
+## Create a Spectrum-enabled project
 
-photon projects create --name "My App" --platforms imessage
-# → ✓ Created My App (proj_abc123) on production
+Run `projects create` with `--name`, `--location`, `--spectrum`, and `--json`; capture the returned project ID; verify with `projects show --json`.
 
-export PHOTON_PROJECT_ID='proj_abc123'   # make it the active project
-photon projects show                  # everything below now uses this project
-```
+## Configure credentials
 
-A freshly created project is **free**. Nothing is charged at creation.
+Obtain project credentials through the current dashboard/project flow. Do not rotate merely to read. Store them in a secret manager and verify with a read-only SDK/API request.
 
-## Get / rotate the project secret
+## Inspect resources
 
-`projects create` returns the **id**, never the secret. Read the existing Spectrum API secret **without rotating it**:
+Use project show/list and Spectrum profile/users/lines/platforms/avatar read commands; finish with the relevant `--json` read.
 
-```bash
-photon projects secret                     # or: get-secret — prints the existing secret
-photon projects secret --json              # → { "id": "...", "projectSecret": "spk_live_…" }
-```
+## Upgrade or billing
 
-You can also read it from the project's **Settings** page in the dashboard.
+Explain the exact cost-bearing action and ask for confirmation. After execution, verify the current plan or billing status.
 
-**Rotate** only when you intend to replace the secret everywhere (printed **once**):
+## Non-default backend
 
-```bash
-photon projects regenerate-secret          # or: rotate-secret
-# ✓ New secret for proj_abc123:
-#   spk_live_…
-# ! This is shown once. Store it somewhere safe — re-rotating is the only way to recover.
-```
+Set the documented backend selector, authenticate against that backend, and verify with `whoami`.
 
-> Rotating **immediately invalidates** the previous secret — any integration still using the old one breaks. Prefer `projects secret` to read; only `regenerate-secret` when replacing. Add `--json` to capture `{ id, projectSecret }` programmatically.
+## CI authentication
 
-## Free vs. business (shared vs. dedicated line)
+Use the documented CI token, disable interactivity, and verify with a read-only command. Never print the token.
 
-A project is **free by default** — you get it the moment you run `projects create`. **iMessage works on both tiers** — the free tier is not a trial or a locked state. The difference is *which* line your messages go out on:
+## Rotate a project secret safely
 
-- **Free** — you send on a **shared line** pooled across free projects. Because the line isn't dedicated to your project, nothing is provisioned *to* you, so `spectrum lines add` / `list` won't show a line assigned to your project. To see the number you're actually sending from, check the **dashboard**. Staying on the free tier is perfectly fine — upgrade only when you want a line of your own.
-- **Business (dedicated line)** — upgrade to the **business** tier to get your **own dedicated line** instead of the shared pool, then confirm the number in the dashboard:
+Confirm that the user intends to invalidate the current secret. Inventory every deployment using it, run `projects regenerate-secret`, update all secret stores, redeploy, and verify before removing rollback access.
 
-```bash
-photon projects upgrade business      # smart-routes to Stripe checkout (or the portal if already subscribed)
-# equivalently, the explicit form:
-photon billing checkout business
-```
+## Unauthorized or project-not-found
 
-`projects upgrade` inspects the current subscription and opens Stripe **checkout** for an unsubscribed project or the **portal** for an already-subscribed one. Force either with `--checkout` / `--manage`. Tiers: `pro`, `business`, `enterprise`.
-
-After upgrading, attach the iMessage line and verify it in the dashboard (the CLI adds the line; the dashboard surfaces the assigned number):
-
-```bash
-photon spectrum lines add             # iMessage line
-photon spectrum lines list            # confirm
-```
-
-## Add an iMessage line
-
-```bash
-export PHOTON_PROJECT_ID='proj_abc123'
-photon spectrum lines add             # --platform imessage is the default (and only option today)
-photon spectrum lines list            # id, platform, number, status
-```
-
-## Inspect an existing project
-
-Point the CLI at a project and read its state:
-
-```bash
-export PHOTON_PROJECT_ID='proj_abc123'
-photon projects show                  # status, location, owner, flags, timestamps
-photon spectrum lines list            # how many lines / their numbers + status
-photon spectrum platforms list        # which platforms are on
-photon billing show                   # current tier + subscription status
-```
-
-## Work against a different backend (multi-backend)
-
-Credentials are stored per backend, so you can hold several sessions at once:
-
-```bash
-photon login --api-host https://staging.example.com
-photon projects ls --api-host https://staging.example.com
-photon auth status                    # lists every backend, marks the active one ●
-```
-
-Or set it for the whole shell: `export PHOTON_API_HOST=https://staging.example.com`. See [`environment.md`](./environment.md) for the full resolution order.
+Check token/backend precedence, selected project ID, account membership, and JSON error output. Do not create a replacement project until the mismatch is understood.

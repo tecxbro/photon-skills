@@ -1,102 +1,49 @@
-# Getting started
-
-> TypeScript samples below — primitives and the app instance are language-neutral.
+# Spectrum getting started
 
 ## Installation
 
+The batteries-included package provides the standard provider set:
+
 ```bash
-npm install spectrum-ts        # or pnpm / yarn / bun add
+npm install spectrum-ts
 ```
 
-Requires TypeScript 5 or later.
+For a lean install, use core plus only the provider packages required by the project:
 
-## Core concepts
+```bash
+bun add @spectrum-ts/core @spectrum-ts/imessage @spectrum-ts/telegram
+```
 
-| Primitive | What it represents |
-|---|---|
-| **Message** | An incoming piece of content — text, attachments, or structured data — from any platform. |
-| **Space** | A conversation context. A DM, a group chat, a terminal session. You send messages *into* a space. |
-| **User** | A participant on a platform, identified by a platform-specific ID. |
-| **Platform provider** | A platform adapter (iMessage, terminal, WhatsApp, or your own) that translates platform-specific protocols into Spectrum's unified interface. |
+Local iMessage is intentionally separate because it includes native macOS dependencies:
 
-Every message arrives as a `[Space, Message]` pair.
-
-## Quickstart
-
-Find `PROJECT_ID` and `SECRET_KEY` in your project **Settings** on the [dashboard](https://app.photon.codes/).
+```bash
+bun add spectrum-ts @spectrum-ts/imessage-local
+```
 
 ```ts
 import { Spectrum } from "spectrum-ts";
-import { imessage } from "spectrum-ts/providers/imessage";
+import { localIMessage } from "@spectrum-ts/imessage-local";
 
-const app = await Spectrum({
-  projectId: "your-project-id",
-  projectSecret: "your-project-secret",
-  providers: [imessage.config()],
-});
-
-for await (const [space, message] of app.messages) {
-  if (message.content.type !== "text") continue;
-
-  // Use the platform's native vocabulary, not a bare send:
-  await message.react("like");                 // tapback to acknowledge instantly
-  await space.responding(async () => {         // show a typing indicator while you work
-    await message.reply(`echo: ${message.content.text}`);  // threaded reply, not a loose message
-  });
-}
+const app = await Spectrum({ providers: [localIMessage.config()] });
 ```
 
-> **Building an agent? Be rich, not robotic.** A bare `space.send(...)` works, but on iMessage (and other rich platforms) it reads like a webhook, not a person. Reach for the native features whenever they fit the moment:
-> - **`message.react("love" | "like" | "laugh" | …)`** — acknowledge a message instantly with a tapback before you've composed a full answer.
-> - **`message.reply(...)`** — answer *the specific message* in-thread, so the conversation stays legible in a busy chat.
-> - **`space.responding(async () => { … })`** — wrap slow work (an LLM call, a fetch) so the recipient sees a typing indicator instead of dead air.
->
-> These **no-op silently** on platforms that don't support them, so there's no downside to reaching for the richer call — write the expressive version once and it degrades gracefully everywhere. See [`reactions-and-replies.md`](./reactions-and-replies.md), [`spaces-and-users.md`](./spaces-and-users.md), and the iMessage-only flourishes (message effects, the full tapback set) in [`providers/imessage.md`](./providers/imessage.md).
+Use TypeScript 5 or later.
 
-Projectless providers like `terminal` work without credentials:
+## Credentials and provider configuration
 
-```ts
-const app = await Spectrum({ providers: [terminal.config()] });
-```
+`Spectrum(...)` accepts explicit `projectId` and `projectSecret`, or reads `SPECTRUM_PROJECT_ID` and `SPECTRUM_PROJECT_SECRET`. `webhookSecret` falls back to `SPECTRUM_WEBHOOK_SECRET`. Provider text fields follow the documented `SPECTRUM_<PLATFORM>_<FIELD>` convention. Explicit values win over environment variables.
 
-## The app instance
+## App surface
 
-```ts
-app.messages                       // AsyncIterable<[Space, Message]>
-await app.send(space, ...)         // send into a space
-await app.responding(space, fn)    // run fn with a typing indicator
-await app.stop()                   // graceful shutdown
-```
+- `app.messages`: long-running inbound stream of `[space, message]` tuples.
+- `app.send(space, ...content)`: send into a known space.
+- `space.send(...content)`: send through the resolved conversation.
+- `app.responding(space, fn)` or `space.responding(fn)`: bracket work with typing cleanup.
+- `app.webhook(request, handler)`: request-scoped HTTP delivery.
+- `app.stop()`: close providers and flush telemetry.
 
-See [`custom-events-and-lifecycle.md`](./custom-events-and-lifecycle.md) for custom event streams and shutdown.
+## Logging and telemetry
 
-## Multi-platform
+Set `options.logLevel` for structured logs; an explicit value wins over `LOG_LEVEL`. Sensitive fields are redacted. Telemetry is opt-in with `telemetry: true`; standard `OTEL_EXPORTER_OTLP_*` variables can override the default exporter. Always call `app.stop()` on shutdown so providers and telemetry flush cleanly.
 
-Combine providers — `app.messages` merges every source. The `message.platform` field identifies the origin.
-
-```ts
-import { Spectrum } from "spectrum-ts";
-import { imessage } from "spectrum-ts/providers/imessage";
-import { terminal } from "spectrum-ts/providers/terminal";
-import { whatsappBusiness } from "spectrum-ts/providers/whatsapp-business";
-
-const app = await Spectrum({
-  projectId: process.env.PROJECT_ID!,
-  projectSecret: process.env.PROJECT_SECRET!,
-  providers: [
-    imessage.config(),
-    whatsappBusiness.config({
-      accessToken: process.env.WA_TOKEN!,
-      phoneNumberId: process.env.WA_NUMBER_ID!,
-      appSecret: process.env.WA_SECRET!,
-    }),
-    terminal.config(),
-  ],
-});
-
-for await (const [space, message] of app.messages) {
-  await space.responding(async () => {
-    await message.reply("Hello from Spectrum.");
-  });
-}
-```
+Official source: <https://photon.codes/docs/spectrum-ts/getting-started>

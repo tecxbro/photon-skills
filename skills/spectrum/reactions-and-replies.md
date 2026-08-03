@@ -1,21 +1,21 @@
-# Reactions and replies
+# Reactions, replies, and edits
 
-> TypeScript samples below — silent no-op on unsupported platforms is part of the model, not a TS detail.
-
-Both `react` and `reply` live directly on an incoming message. Both no-op silently on platforms that don't support them — no `try/catch` needed.
+Spectrum exposes both convenience methods on messages and canonical content builders passed through the send pipeline.
 
 ```ts
+import { reaction, reply, edit, text } from "spectrum-ts";
+
 await message.react("love");
-await message.reply("Replying to your message.");
-await message.reply("Here's the file:", attachment("/path/to/file.pdf"));
+await space.send(reaction("love", message));
+
+await message.reply("Acknowledged");
+await space.send(reply(text("Acknowledged"), message));
+
+const sent = await space.send("Draft");
+await sent.edit("Final");
+await space.send(edit(text("Final"), sent));
 ```
 
-On platforms with thread support (iMessage, WhatsApp Business), `reply` sends threaded. **It is not downgraded to a regular send** — if you need guaranteed delivery, use `space.send(...)`.
+Use provider-specific reaction constants after narrowing. A reply may resolve as a no-op on a provider without thread support; use a regular `space.send(...)` when delivery is more important than threading. Respect builder restrictions on nesting reply, reaction, edit, group, or typing content.
 
-For iMessage tapback constants (`imessage.tapbacks.love`, `like`, `dislike`, `laugh`, `emphasize`, `question`), see [`providers/imessage.md`](./providers/imessage.md).
-
-| Want to | Use |
-|---|---|
-| Send fresh content into a conversation | `space.send(...)` |
-| Reply in-thread to a specific message | `message.reply(...)` |
-| React to a specific message | `message.react(reaction)` |
+Official source: <https://photon.codes/docs/spectrum-ts/reactions-and-replies>

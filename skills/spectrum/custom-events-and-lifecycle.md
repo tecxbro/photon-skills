@@ -1,32 +1,14 @@
 # Custom events and lifecycle
 
-> TypeScript samples below — the per-provider event model and idempotent `stop()` are language-neutral.
+Provider-specific streams complement `app.messages`; they do not replace the unified message loop.
 
-## Custom events
+- Consume only documented event streams.
+- Pass abort signals when the provider supports cancellation.
+- Persist cursors after durable processing.
+- Recover missed events after reconnects.
+- Deduplicate retries.
+- Stop streams and call `app.stop()` on shutdown.
+- Distinguish long-running stream mode from HTTP webhook mode.
+- Do not assume one provider’s recovery semantics apply to another.
 
-Providers can emit events beyond messages — typing, read receipts, delivery status, anything. Each is exposed as a flat async iterable on the app instance:
-
-```ts
-for await (const event of app.typing) {
-  console.log(`${event.platform}: typing event received`);
-}
-```
-
-The property name matches the event name the provider declared. Streams are created lazily on first access; subsequent iterations share the same source. Per-platform access is also available on a narrowed instance:
-
-```ts
-const im = imessage(app);
-for await (const event of im.typing) { /* iMessage-only typing events */ }
-```
-
-## Graceful shutdown
-
-```ts
-await app.stop();
-```
-
-Closes the merged message stream, drains and disposes every custom event stream, and tears down every platform client via its `lifecycle.destroyClient` hook (if defined). Idempotent.
-
-Spectrum registers `SIGINT` and `SIGTERM` handlers on startup. When a signal fires, `stop()` is invoked with a 3-second timeout — exit 0 if cleanup completes, exit 1 if not. You don't need to wire this up yourself.
-
-Call `stop()` manually when embedding Spectrum in a longer-running process, in tests that create and dispose an app per case, or when re-initializing with a different provider set.
+Official source: <https://photon.codes/docs/spectrum-ts/custom-events-and-lifecycle>
