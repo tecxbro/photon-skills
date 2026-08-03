@@ -1,23 +1,16 @@
 <!-- openapi-tag: fusor -->
 # Spectrum API: Fusor
 
-Fusor is Spectrum's webhook/event transport used by providers and custom integrations. The management API issues short-lived Fusor authorization material; it does not replace project credentials.
+Fusor is Spectrum's webhook and event transport used by built-in and custom providers. The management API issues short-lived Fusor authorization material; it does not replace project credentials.
 
-## Operation
+## Current endpoint
 
-The current tag exposes **Issue Fusor token**. Call it with project Basic auth, capture the token and TTL from the response, and keep it server-side. Cache only until expiry and refresh before a long-lived consumer reconnects.
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/projects/{projectId}/fusor/token` | Issue a Fusor token for the authenticated project. |
 
-Because token path and response fields are generated from the current OpenAPI, inspect them before implementing a new client:
+Call the endpoint with project Basic auth. Capture the token and documented TTL or expiry fields from the current response schema. Keep the token server-side, cache it only for its intended lifetime, and refresh before reconnecting a long-lived consumer.
 
-```bash
-node --input-type=module <<'NODE'
-const spec = await fetch("https://spectrum.photon.codes/openapi/json").then(r => r.json());
-for (const [path, item] of Object.entries(spec.paths)) for (const [method, op] of Object.entries(item)) {
-  if (op?.tags?.includes("fusor")) console.log(method.toUpperCase(), path, op.summary ?? "");
-}
-NODE
-```
-
-Never log the issued token, put it in browser code, or confuse it with the long-lived project secret.
+A Fusor token is not a project secret, Dashboard bearer token, iMessage token, or Voice token. Never write it to logs, browser storage, webhook payloads, or committed configuration. If issuance times out ambiguously, reconcile whether the caller can safely request a replacement because short-lived token creation is not a billing or resource-allocation operation.
 
 Official OpenAPI: <https://spectrum.photon.codes/openapi/json>

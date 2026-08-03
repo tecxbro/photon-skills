@@ -1,25 +1,23 @@
 <!-- openapi-tag: whatsapp-business -->
 # Spectrum API: WhatsApp Business
 
-The management tag owns project WhatsApp Business onboarding and provider configuration. Runtime message sends, templates, Flows, media, and event streams belong in Spectrum or `@photon-ai/whatsapp-business`.
-
-## Security boundary
-
-Meta access tokens, app secrets, phone-number IDs, registration payloads, and webhook configuration are secrets or sensitive provider state. Keep all management calls server-side and redact response fields before logging.
+The current management surface lists connected accounts, issues provider tokens, and manages approved message templates. Runtime sends, media transfer, interactive messages, Flows, and event streams belong in Spectrum or `@photon-ai/whatsapp-business`.
 
 ## Current endpoint inventory
 
-WhatsApp onboarding operations can change as Meta's Embedded Signup contract evolves. Extract the live methods, paths, and schemas before implementing or updating a flow:
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/projects/{projectId}/whatsapp-business/accounts` | List WhatsApp Business accounts connected to the project. |
+| `POST` | `/projects/{projectId}/whatsapp-business/tokens` | Issue current WhatsApp Business authorization material. |
+| `GET` | `/projects/{projectId}/whatsapp-business/accounts/{accountId}/templates/` | List templates for one connected account. |
+| `POST` | `/projects/{projectId}/whatsapp-business/accounts/{accountId}/templates/` | Create or submit a template using the current schema. |
+| `PATCH` | `/projects/{projectId}/whatsapp-business/accounts/{accountId}/templates/{templateId}` | Update the supported fields of one template. |
+| `DELETE` | `/projects/{projectId}/whatsapp-business/accounts/{accountId}/templates/{templateId}` | Delete one template. |
 
-```bash
-node --input-type=module <<'NODE'
-const spec = await fetch("https://spectrum.photon.codes/openapi/json").then(r => r.json());
-for (const [path, item] of Object.entries(spec.paths)) for (const [method, op] of Object.entries(item)) {
-  if (op?.tags?.includes("whatsapp-business")) console.log(method.toUpperCase(), path, op.summary ?? "");
-}
-NODE
-```
+All calls require project Basic authentication. Account IDs and template IDs are opaque provider resources; do not derive them from display names.
 
-Do not repurpose a Slack/iMessage line operation for WhatsApp. Dedicated WhatsApp line onboarding and removal have provider-specific billing behavior.
+Provider tokens, app credentials, phone-number IDs, and account metadata are sensitive. Keep responses server-side and redact them before logs or error reports. Template creation and updates must match Meta's current category, language, component, and variable rules. Deletion is irreversible from Photon and requires explicit confirmation after showing the account, template name, language, and ID.
+
+Do not use these template routes to bypass Meta approval or the 24-hour free-form messaging window. Use the low-level WhatsApp Business skill to send an already approved template.
 
 Official OpenAPI: <https://spectrum.photon.codes/openapi/json>
