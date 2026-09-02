@@ -1,5 +1,7 @@
 # Spectrum Slack provider
 
+> **Supplemental guidance.** `spectrum-ts` currently ships the Slack provider package, but Slack pages are not listed in Photon's live `llms.txt` documentation index. Inspect the installed package and current source before depending on a version-sensitive option.
+
 ## Setup
 
 ```ts
@@ -21,7 +23,7 @@ slack.config({
 });
 ```
 
-`tokens` maps team IDs to `xoxb-...` bot tokens. `teams` is optional metadata. `endpoint` can use `SPECTRUM_SLACK_ENDPOINT`. In cloud mode, an empty config can use project-managed installations.
+`tokens` maps team IDs to `xoxb-...` bot tokens. `teams` is optional metadata. `endpoint` can use `SPECTRUM_SLACK_ENDPOINT`. In cloud mode, an empty config may use project-managed installations when the installed package supports it.
 
 ## Conversations
 
@@ -31,10 +33,10 @@ const user = await sl.user("U0123456789");
 const dm = await sl.space.create(user, { teamId: "TEAM_A" });
 ```
 
-Narrowed spaces expose `teamId`. Narrowed messages expose `isFromMe`, optional `subtype`, `threadTs`, and `ts`.
+Narrowed spaces expose `teamId`. Narrowed messages may expose `isFromMe`, optional `subtype`, `threadTs`, and `ts`.
 
-Slack supports text, mrkdwn, files, reactions, and threaded replies. Typing is accepted as a no-op. Message edits currently arrive inbound but outbound edit support should not be assumed.
+Slack supports text, mrkdwn, files, reactions, and threaded replies in the documented package contract. Typing is accepted as a no-op. Do not assume outbound edit support without checking the installed version.
 
 Never log or commit bot tokens.
 
-Official sources: <https://photon.codes/docs/spectrum-ts/providers/slack/setup> and <https://photon.codes/docs/spectrum-ts/providers/slack/conversations-and-events>
+Source package: <https://github.com/photon-hq/spectrum-ts>
