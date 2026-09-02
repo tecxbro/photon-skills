@@ -1,6 +1,18 @@
 name: Check Photon documentation coverage
 
 on:
+  push:
+    branches:
+      - main
+      - skill-update-v2
+    paths:
+      - "skills/**"
+      - "docs/photon-docs-coverage.json"
+      - "docs/photon-docs-coverage.md"
+      - "scripts/check-photon-*.mjs"
+      - ".github/workflows/check-photon-docs.yml"
+      - "README.md"
+      - "LICENSE"
   pull_request:
     paths:
       - "skills/**"
@@ -8,6 +20,8 @@ on:
       - "docs/photon-docs-coverage.md"
       - "scripts/check-photon-*.mjs"
       - ".github/workflows/check-photon-docs.yml"
+      - "README.md"
+      - "LICENSE"
   schedule:
     - cron: "17 15 * * 1"
   workflow_dispatch:
