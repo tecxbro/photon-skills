@@ -1,6 +1,6 @@
 # Spectrum reactions, replies, edits, and unsend
 
-The message sugar methods and canonical content builders route through the same send pipeline.
+The message sugar methods and canonical content builders route through the same send pipeline. Read [`capability-semantics.md`](./capability-semantics.md) before depending on any optional provider behavior.
 
 ## Reactions
 
@@ -18,13 +18,13 @@ Tapback aliases include `Emoji.love`, `like`, `dislike`, `laugh`, `emphasize`, a
 ## Replies
 
 ```ts
-import { reply, text } from "spectrum-ts";
+import { attachment, reply, text } from "spectrum-ts";
 
 await message.reply("Got it", attachment("./answer.pdf"));
 await space.send(reply(text("Got it"), message));
 ```
 
-Threaded replies are supported by platforms such as iMessage and WhatsApp Business. On an unsupported platform, a reply no-ops; it is not downgraded to a loose send. Use `space.send(...)` when delivery is more important than threading.
+Threaded replies are supported by platforms such as iMessage and WhatsApp Business. On an unsupported platform, a reply is skipped; it is not downgraded to a loose send. Use `space.send(...)` when delivery is more important than threading.
 
 `reply()` cannot wrap `reply`, `edit`, `reaction`, `group`, `typing`, `rename`, `avatar`, `addMember`, `removeMember`, `leaveSpace`, `unsend`, or `read` content.
 
