@@ -17,7 +17,7 @@ npx skills add photon-hq/skills --skill <skill-name>
 | [`spectrum`](./skills/spectrum/SKILL.md) | `spectrum-ts` | The default for new agents across iMessage, WhatsApp Business, Telegram, Terminal, Voice, custom providers, and supported supplemental providers. |
 | [`imessage`](./skills/imessage/SKILL.md) | `@photon-ai/advanced-imessage`, `@photon-ai/imessage-kit` | Choosing an iMessage stack and using current low-level or local iMessage APIs. |
 | [`whatsapp-business`](./skills/whatsapp-business/SKILL.md) | `@photon-ai/whatsapp-business` | Low-level WhatsApp Business behavior that Spectrum does not expose. |
-| [`chat-adapter-imessage`](./skills/chat-adapter-imessage/SKILL.md) | `chat-adapter-imessage` | Connecting a Chat SDK bot to iMessage through Spectrum Cloud, self-hosted Advanced iMessage, or local macOS. |
+| [`chat-adapter-imessage`](./skills/chat-adapter-imessage/SKILL.md) | `@photon-ai/chat-adapter-imessage` | Connecting a Chat SDK bot to iMessage through Spectrum Cloud or a self-hosted Advanced iMessage gRPC endpoint. |
 | [`photon-webhooks`](./skills/photon-webhooks/SKILL.md) | Spectrum Webhooks | Signed inbound HTTP delivery, verification, retries, and registration. |
 | [`photon-api`](./skills/photon-api/SKILL.md) | Spectrum API, Dashboard API, OAuth | HTTPS management-plane automation, OAuth user authorization, curl, OpenAPI, and non-TypeScript integrations. |
 | [`photon-cli`](./skills/photon-cli/SKILL.md) | `@photon-ai/cli` | Interactive and scripted project, profile, Spectrum-resource, billing, and authentication workflows. |
@@ -35,7 +35,8 @@ npx skills add photon-hq/skills --skill <skill-name>
 |---|---|
 | New agent on one or more messaging platforms | Spectrum |
 | Direct low-level iMessage feature | Current Advanced iMessage |
-| Local automation on one Mac | Open-source iMessage Kit |
+| Local automation on one Mac | Open-source iMessage Kit or Spectrum local iMessage |
+| Connect a Chat SDK bot to iMessage | Current scoped Chat SDK adapter |
 | Direct low-level WhatsApp Business feature | Current WhatsApp Business SDK |
 | Receive inbound project events over HTTP | Spectrum Webhooks |
 | Manage resources or authorize a third-party app over HTTPS | Photon API |
@@ -48,6 +49,7 @@ Spectrum is the default for new agent-oriented applications. Drop down to a low-
 
 - Build an iMessage and Telegram agent with one Spectrum message loop.
 - Add a Terminal test provider to my Spectrum app.
+- Connect this Chat SDK bot to iMessage using Photon Cloud.
 - Place an outbound call through a Spectrum iMessage line.
 - Diagnose one-way audio on a Spectrum voice call.
 - Connect an eve agent to iMessage through Photon.
