@@ -1,9 +1,23 @@
+<!-- openapi-tag: slack -->
 # Spectrum API: Slack
 
-Use the current `slack` tag for Slack app configuration and installation management.
+## Endpoint inventory
 
-> **Security boundary:** the documented installation-list response can contain plaintext bot tokens and refresh tokens. Call it only from trusted server-side environments. Never return that payload to a browser, log it, paste it into an issue, or store it unencrypted.
+The current Slack tag includes:
 
-Verify every path and response against the current OpenAPI. Redact token fields before diagnostics. Require confirmation before removing an active installation or changing app configuration in a way that interrupts events.
+- `POST` Issue Slack tokens.
+- `GET` Get Slack app config.
+- `PUT` Upsert Slack app config.
+- `DELETE` Delete Slack app config.
+- `GET /projects/{projectId}/slack/installations` List installations.
+- `PUT` Upsert an installation.
+- `DELETE` Delete an installation.
+- `POST` Set up the project's Slack app through workspace-admin tokens.
 
-Official OpenAPI: <https://spectrum.photon.codes/openapi/json>
+Before implementing any operation other than the documented list path, extract the exact current paths and request schema from OpenAPI; Slack OAuth and admin-token contracts can change.
+
+> **Plaintext-token warning:** installation list responses contain `botToken`, `botRefreshToken`, and expiry data. Call only from a trusted server. Do not return the raw response to a browser, log it, persist it unnecessarily, or attach it to support tickets.
+
+Deleting an app config or installation can interrupt event delivery and message sends. Require confirmation and inspect active installations before deletion. Upserts must preserve required scopes and current app identity.
+
+Official API page: <https://photon.codes/docs/api-reference/slack/list-slack-installations-for-project>

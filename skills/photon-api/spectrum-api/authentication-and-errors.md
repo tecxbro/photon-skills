@@ -1,31 +1,55 @@
 # Spectrum API authentication and errors
 
-## Authentication
+## Basic authentication
 
-Where documented, send HTTP Basic authentication with the project ID as username and project secret as password:
+Every project-scoped operation documents:
 
-```ts
-const credentials = Buffer.from(
-  `${process.env.PHOTON_PROJECT_ID}:${process.env.PHOTON_PROJECT_SECRET}`,
-).toString("base64");
-
-const response = await fetch(
-  `https://spectrum.photon.codes/projects/${process.env.PHOTON_PROJECT_ID}/webhooks/`,
-  { headers: { Authorization: `Basic ${credentials}` } },
-);
+```http
+Authorization: Basic base64(projectId:projectSecret)
 ```
 
-Never log the `Authorization` header, project secret, signing secret, access token, or provider token.
+```bash
+curl --user "$PROJECT_ID:$PROJECT_SECRET" \
+  "https://spectrum.photon.codes/projects/$PROJECT_ID/platforms/"
+```
 
-## Response handling
+The project ID is the Basic username and the project secret is the password. Do not confuse these with Dashboard bearer tokens or short-lived iMessage, Fusor, or Voice LightAuth tokens.
 
-- Parse the `{ succeed, data }` envelope only after checking the HTTP status and content type.
-- Treat `401` and `403` as credential or authorization failures, not retryable network errors.
-- Handle `404` as a missing resource or wrong project scope.
-- Handle `409` according to the endpoint's documented conflict semantics.
-- Back off on `429`; the default project-wide ceiling is 5 requests per second.
-- Retry transient `5xx` failures only for idempotent operations or with an idempotency strategy.
+## Standard handling
 
-Secret rotation immediately invalidates old credentials. Require explicit confirmation and a rollout plan before rotating.
+```ts
+const response = await fetch(url, {
+  method,
+  headers: {
+    authorization: `Basic ${Buffer.from(`${projectId}:${projectSecret}`).toString("base64")}`,
+    "content-type": "application/json",
+  },
+  body: body === undefined ? undefined : JSON.stringify(body),
+  signal,
+});
 
-Official sources: <https://photon.codes/docs/api-reference/introduction> and <https://photon.codes/docs/api-reference/rate-limit>
+const payload = await response.json().catch(() => undefined);
+if (!response.ok) {
+  throw new SpectrumApiError(response.status, payload);
+}
+```
+
+Common classes of response:
+
+- `400` malformed request;
+- `401` missing or invalid project credentials;
+- `404` project/resource not found;
+- `409` current state conflicts with the requested mutation;
+- `422` semantically invalid input;
+- `429` project rate limit exceeded;
+- `5xx` transient service failure.
+
+Use the live operation page for exact status contracts. Retry `429` and transient `5xx` only with bounded backoff. Do not retry non-idempotent billing or destructive actions automatically.
+
+## Credential lifecycle
+
+Project-secret rotation invalidates the previous value immediately. Require explicit intent, inventory every deployment using it, update all secret stores, and verify integrations after rollout. Do not rotate a secret simply to read it.
+
+Short-lived token endpoints such as iMessage, Fusor, and Voice return their own TTL. Cache only for the documented lifetime and never treat them as project secrets.
+
+Official source: <https://photon.codes/docs/api-reference/introduction>

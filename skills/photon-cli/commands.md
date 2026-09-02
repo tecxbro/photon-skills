@@ -1,32 +1,115 @@
 # Photon CLI command reference
 
-Reconstruct command usage from the current `--help` output and official command pages before scripting uncommon flags.
+Run `photon <command> --help` before scripting uncommon flags. Global flags must appear before or at the root command; command-specific flags belong after the subcommand.
 
-## Global checks
+## Root command tree
 
-```bash
-photon --help
-photon --version
-photon whoami --json
-photon auth status --json
+```text
+photon
+├── ping
+├── env current
+├── login
+├── logout
+├── whoami
+├── auth status
+├── config show
+├── profile show | init | update
+├── projects ls | show | create | update | delete
+│   ├── regenerate-secret | open | upgrade | check-phone
+├── spectrum profile show | update
+│   ├── users ls | add | remove
+│   ├── lines ls | add | remove
+│   ├── platforms ls | enable | disable
+│   └── avatar upload
+└── billing plans | show | checkout | manage
 ```
+
+## Global flags
+
+| Flag | Environment | Meaning |
+|---|---|---|
+| `--debug` | `PHOTON_DEBUG=1` | Verbose request and response logs to stderr. Ensure secrets remain redacted. |
+| `--version`, `-v` | - | Print the CLI version. |
+| `--no-color` | `NO_COLOR=1` | Disable color output. |
+
+Common command-level flags include `--api-host`, `--project`, `--token`, `--json`, `--yes`, and `--no-browser`.
 
 ## Projects
 
-Current project workflows include list, show, create, update/rename, open, delete, upgrade, and deliberate credential regeneration. Project creation uses `--name`, `--location`, and `--spectrum`.
+```bash
+photon projects ls --json
+photon projects show [id] --json
+photon projects create --name "My Project" --location us-east --spectrum --json
+photon projects update [id] --name "New Name"
+photon projects open [id] --no-browser
+photon projects check-phone +15551234567
+```
 
-Never invent a read-only secret subcommand. Obtain credentials through the documented project/dashboard flow. Treat regeneration as destructive because the previous secret stops working.
+Aliases:
+
+- `project ls`, `projects list`
+- `projects show`: `projects get`
+- `projects create`: `projects new`
+- `projects update`: `projects edit`, `projects set`
+- `projects delete`: `projects rm`, `projects remove`
+- `projects regenerate-secret`: `projects rotate-secret`
+
+Destructive operations:
+
+```bash
+photon projects delete [id]       # permanent; confirms
+photon projects delete [id] -y    # skips confirmation
+photon projects regenerate-secret [id]  # invalidates old secret
+```
+
+The current CLI does not expose a read-only project-secret retrieval subcommand. Obtain credentials through the current project or dashboard flow. Treat regeneration as a credential rotation.
+
+## Subscription routing
+
+```bash
+photon projects upgrade
+photon projects upgrade pro
+photon projects upgrade [id] business --qty 5
+photon projects upgrade --checkout
+photon projects upgrade --manage
+photon projects upgrade --plan price_xxx
+```
+
+`--manage` takes precedence over tier, plan, and checkout flags. Paid changes, checkout, cancellation, downgrade, and portal actions require explicit user confirmation.
 
 ## Billing
 
-Billing and portal operations can create, change, or cancel paid services. Ask for confirmation immediately before executing them.
+```bash
+photon billing plans
+photon billing show --json
+photon billing checkout
+photon billing checkout pro
+photon billing checkout business --qty 5
+photon billing checkout --plan price_xxx --no-browser --json
+photon billing manage --no-browser
+```
 
-## Profile and utilities
+`billing manage` is also `billing portal`.
 
-Use current documented profile fields and diagnostic commands. Verify aliases and JSON shapes against `--help`; do not infer them from SDK property names.
+## Profiles and diagnostics
 
-Official command pages:
+```bash
+photon profile show
+photon profile init
+photon profile update --display-name "Jane Doe"
+photon ping
+photon ping -u https://custom.example.com
+photon env current
+photon whoami
+photon auth status --json
+photon config show --json
+```
 
+`config show` must not print secrets. It reports the config directory, resolved backend, active project, and relevant environment selection.
+
+Official sources:
+
+- <https://photon.codes/docs/cli/overview>
 - <https://photon.codes/docs/cli/projects>
 - <https://photon.codes/docs/cli/billing>
 - <https://photon.codes/docs/cli/profile-and-utilities>

@@ -1,38 +1,55 @@
 # WhatsApp Business getting started
 
-Use Node.js 18+ or Bun. Install `@photon-ai/whatsapp-business` and obtain three credentials: `accessToken`, `phoneNumberId`, and `appSecret`.
+Most apps should use Spectrum. Use `@photon-ai/whatsapp-business` when the requested direct Meta behavior is not exposed by Spectrum.
 
-## Credential routes
+## Requirements
 
-### Spectrum Cloud
+- Node.js 18+ or Bun.
+- `accessToken`, `phoneNumberId`, and `appSecret`.
+- Either Spectrum Cloud guided configuration or a Meta app configured for WhatsApp Business.
 
-Enable WhatsApp in the Photon project, complete the guided configuration, and copy the generated credentials.
+```bash
+npm install @photon-ai/whatsapp-business
+```
 
-### Bring your own Meta app
+For a bring-your-own Meta app, use a permanent System User token rather than the temporary token from API Setup. Required scopes are `whatsapp_business_messaging`, `whatsapp_business_management`, and `business_management`. Configure the Meta webhook callback as `https://whatsapp-business.spectrum.photon.codes/webhook`, subscribe to `messages`, and keep the app secret private.
 
-1. Create a Meta app with the WhatsApp product.
-2. Copy the WhatsApp `phone_number_id`.
-3. Create a permanent System User token with `whatsapp_business_messaging`, `whatsapp_business_management`, and `business_management`.
-4. Copy the app secret.
-5. Configure the Meta callback URL as `https://whatsapp-business.spectrum.photon.codes/webhook`, use any verify token for the handshake, and subscribe to `messages`.
-6. Keep all three credentials in a secret manager.
+## Client
 
 ```ts
 import { createClient } from "@photon-ai/whatsapp-business";
 
-await using client = createClient({
+const client = createClient({
   accessToken: process.env.WA_ACCESS_TOKEN!,
   phoneNumberId: process.env.WA_PHONE_NUMBER_ID!,
   appSecret: process.env.WA_APP_SECRET!,
   retry: true,
+  timeout: 10_000,
 });
 
-await client.messages.send({
-  to: "+15551234567",
-  text: "Hello from the SDK!",
-});
+try {
+  await client.messages.send({ to: "+15551234567", text: "Hello" });
+} finally {
+  await client.close();
+}
 ```
 
-The managed event stream reconnects and recovers buffered events. Still persist cursors when implementing explicit missed-event recovery, and narrow both `event.type` and `event.message.content.type` before reading type-specific fields.
+The client exposes `messages`, `events`, and `media`. It also implements `Symbol.asyncDispose`, so `await using` is supported by compatible runtimes.
+
+## Echo bot
+
+```ts
+for await (const event of client.events.subscribe()) {
+  if (event.type !== "message") continue;
+  if (event.message.content.type !== "text") continue;
+
+  await client.messages.send({
+    to: event.message.from,
+    text: event.message.content.body,
+  });
+}
+```
+
+Always narrow both `event.type` and `message.content.type`. Persist event cursors only after successful processing so reconnect and missed-event recovery remain correct.
 
 Official source: <https://photon.codes/docs/advanced-kits/whatsapp/getting-started>

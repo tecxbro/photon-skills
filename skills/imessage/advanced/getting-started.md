@@ -1,19 +1,21 @@
 # Advanced iMessage getting started
 
-Most applications should start with Spectrum. Use `@photon-ai/advanced-imessage` when a low-level iMessage capability is required.
+Most new agent applications should start with Spectrum. Use `@photon-ai/advanced-imessage` directly only when the requested iMessage capability is not exposed by Spectrum.
 
 ## Requirements
 
 - Node.js `>=18.17` or Bun.
-- A server address in `host:port` form. Do not include `https://`.
-- A bearer token stored outside source control.
-- An E.164 phone number or email address that can receive iMessage.
+- A Photon server address in `host:port` format. Do not include `https://`.
+- A bearer token stored in a secret manager or environment variable.
+- A full email address or E.164 phone number for the recipient.
 
 ```bash
 npm install @photon-ai/advanced-imessage
 export IMESSAGE_ADDRESS="imessage.example.com:443"
 export IMESSAGE_TOKEN="your-token"
 ```
+
+## First message
 
 ```ts
 import { createClient } from "@photon-ai/advanced-imessage";
@@ -25,13 +27,36 @@ const im = createClient({
 
 try {
   const { chat } = await im.chats.create(["+15551234567"]);
-  const sent = await im.messages.sendText(chat.guid, "Hello from the SDK");
-  console.log(sent.guid);
+  const message = await im.messages.sendText(chat.guid, "Hello from Photon");
+  console.log(message.guid);
 } finally {
   await im.close();
 }
 ```
 
-The client exposes `messages`, `chats`, `groups`, `attachments`, `polls`, `addresses`, `locations`, and `events`. Unary requests can use documented timeout and retry options; event streams are not automatically replayed, so use cursors and the events API for missed-event recovery.
+Message, chat, group, attachment, poll, and location APIs use server identifiers returned by the SDK. Do not pass a raw phone number where a `chat.guid` or message GUID is required.
+
+## Client options
+
+| Option | Type | Required | Meaning |
+|---|---|---:|---|
+| `address` | `string` | Yes | gRPC server address in `host:port` form. |
+| `token` | `string` | Yes | Bearer token. Never log it. |
+| `tls` | `boolean` | No | Defaults to `true`; keep enabled for hosted servers. |
+| `timeout` | `number` | No | Default timeout in milliseconds for unary calls. Streams remain open. |
+| `retry` | `boolean | RetryOptions` | No | Retries retryable unary failures. Streams are not retried automatically. |
+
+## Resource map
+
+| Namespace | Responsibility |
+|---|---|
+| `im.messages` | Sends, replies, reactions, stickers, edits, unsends, queries, and message events. |
+| `im.chats` | Chat creation, state, read state, typing, contact cards, backgrounds, and chat events. |
+| `im.groups` | Group names, participants, icons, leaving, and group events. |
+| `im.attachments` | Uploads, metadata, and streamed downloads. |
+| `im.polls` | Poll creation, state, votes, options, and poll events. |
+| `im.addresses` | Availability, address metadata, and Focus state. |
+| `im.locations` | Location requests, snapshots, and live Find My updates. |
+| `im.events` | Durable catch-up after disconnects. |
 
 Official source: <https://photon.codes/docs/advanced-kits/imessage/getting-started>

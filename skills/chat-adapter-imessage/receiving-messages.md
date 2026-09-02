@@ -2,7 +2,7 @@
 
 ## Signed webhook
 
-Use Spectrum Cloud webhooks for serverless routes. Configure `IMESSAGE_WEBHOOK_SECRET`, preserve the request body, and hand the `Request` directly to the adapter:
+Use Spectrum Cloud webhooks for serverless routes. Configure `IMESSAGE_WEBHOOK_SECRET` unless a trusted `webhookVerifier` is supplied, preserve the original request, and hand the `Request` directly to the Chat SDK webhook router:
 
 ```ts
 import { after } from "next/server";
@@ -15,7 +15,11 @@ export async function POST(request: Request): Promise<Response> {
 }
 ```
 
-The adapter verifies the signature, rejects stale deliveries, parses the event, and routes it to the bot. Return quickly. Spectrum delivers at least once, so deduplicate side effects with the webhook delivery ID and message ID.
+The adapter verifies the delivery, parses the Spectrum event, rebuilds the Chat SDK message/thread, and routes it to the bot. A trusted `webhookVerifier` takes precedence over `webhookSecret`; reject the request when that verifier throws or returns a falsy value.
+
+Acknowledge quickly. Spectrum Cloud retries failed deliveries and provides at-least-once delivery, so deduplicate side effects using the webhook delivery ID together with `message.id` when exactly-once behavior matters.
+
+Webhook deliveries can reply without a live gateway connection because the adapter rebuilds the conversation from its chat GUID. With several configured iMessage lines, an unseen thread may not have enough routing information; use a thread observed through the gateway when the adapter reports that boundary.
 
 ## Gateway listener
 
@@ -28,13 +32,15 @@ return bot.adapters.imessage.startGatewayListener(
 );
 ```
 
+For serverless deployments, protect the listener route with an authorization secret and schedule overlapping invocations so a replacement starts before the preceding listener expires.
+
 | Environment | Preferred receiving mode |
 |---|---|
-| Serverless route | Webhook |
+| Serverless route | Signed Spectrum Cloud webhook |
 | Long-running worker | Gateway listener |
-| Local development | Local listener or tunnelled webhook |
-| Existing Chat SDK bot | The bot's registered adapter webhook |
+| Local development against cloud | Gateway listener or a tunnelled cloud webhook |
+| Existing Chat SDK bot | The bot's registered iMessage adapter webhook |
 
-Do not run duplicate receivers without deduplication. Group replies are session-bound and may require the gateway to have observed the group in the current session.
+Do not run duplicate receivers without idempotent processing. Local on-device receiving is not supported by this adapter; use `@spectrum-ts/imessage-local` or `@photon-ai/imessage-kit` instead.
 
 Official source: <https://photon.codes/docs/integrations/chat-sdk>

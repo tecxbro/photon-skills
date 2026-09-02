@@ -1,11 +1,11 @@
 ---
 name: spectrum
 description: >
-  Build new messaging agents with Spectrum, Photon's default unified SDK. Use for spectrum-ts, app.messages, app.send, app.responding, app.webhook, webhooks, Markdown, streaming text, app cards, edits, unsend, read state, typing, rename, avatars, membership, iMessage, WhatsApp Business, Telegram, Slack, Terminal, Voice, local iMessage, telemetry, deliverability, troubleshooting, Chat SDK integration, custom platforms, lifecycle, recovery, and production message pipelines. Keywords: Spectrum, spectrum-ts, unified messaging, multi-platform agent, iMessage, WhatsApp, Telegram, Slack, terminal, SIP voice, webhook, content builders, app card, streaming, definePlatform.
+  Build new messaging agents with Spectrum, Photon's default unified SDK. Use for spectrum-ts, app.messages, app.send, app.responding, app.webhook, webhooks, Markdown, streaming text, app cards, edits, unsend, read state, typing, rename, avatars, membership, iMessage, WhatsApp Business, Telegram, Terminal, Voice, local iMessage, telemetry, deliverability, troubleshooting, Chat SDK integration, eve integration, custom platforms, lifecycle, recovery, and production message pipelines. Keywords: Spectrum, spectrum-ts, unified messaging, multi-platform agent, iMessage, WhatsApp, Telegram, terminal, SIP voice, webhook, content builders, app card, streaming, definePlatform.
 license: MIT
 metadata:
   author: photon-hq
-  version: '3.0.0'
+  version: '3.1.0'
 ---
 
 # Spectrum
@@ -29,7 +29,9 @@ const app = await Spectrum({
 
 try {
   for await (const [space, message] of app.messages) {
+    if (message.direction === "outbound") continue;
     if (message.content.type !== "text") continue;
+
     await space.responding(async () => {
       await message.reply(`You said: ${message.content.text}`);
     });
@@ -41,6 +43,12 @@ try {
 
 Projectless providers such as Terminal can run without project credentials. Local iMessage is a separate native package: `@spectrum-ts/imessage-local`.
 
+## Contract gate
+
+Use generic Spectrum content first. Narrow to a provider only when the behavior is genuinely provider-specific. Before depending on an optional capability, identify whether the selected provider guarantees native support, a fallback, warn-and-skip behavior, an accepted no-op, or a thrown error. A universal method existing does not prove every provider implements it.
+
+When local guidance and an installed package disagree, inspect the installed package version and the smallest relevant page from <https://photon.codes/docs/llms.txt>. Never combine imports, content shapes, or methods from different Photon SDK boundaries.
+
 ## Topic routing
 
 | Area | Canonical file |
@@ -50,14 +58,14 @@ Projectless providers such as Terminal can run without project credentials. Loca
 | Content index | [`content.md`](./content.md) |
 | Spaces and users | [`spaces-and-users.md`](./spaces-and-users.md) |
 | Reactions, replies, and edits | [`reactions-and-replies.md`](./reactions-and-replies.md) |
+| Capability and fallback behavior | [`capability-semantics.md`](./capability-semantics.md) |
 | Platform narrowing | [`platform-narrowing.md`](./platform-narrowing.md) |
 | SDK webhooks | [`webhooks.md`](./webhooks.md) |
-| Providers | [`providers/imessage.md`](./providers/imessage.md) |
+| Providers | [`providers/imessage.md`](./providers/imessage.md) and the other files in [`providers/`](./providers/) |
 | Custom lifecycle/events | [`custom-events-and-lifecycle.md`](./custom-events-and-lifecycle.md) |
 | Custom providers | [`custom-platforms.md`](./custom-platforms.md) |
 | Chat SDK | [`integrations/chat-sdk.md`](./integrations/chat-sdk.md) |
+| eve | [`integrations/eve.md`](./integrations/eve.md) |
 | Production patterns | [`best-practices.md`](./best-practices.md) |
-
-Use generic content first. Narrow to a provider only when the feature is genuinely provider-specific.
 
 Official source: <https://photon.codes/docs/spectrum-ts/introduction>

@@ -1,15 +1,19 @@
-# Spectrum API: voice
+<!-- openapi-tag: voice -->
+# Spectrum API: Voice
 
-Manage Voice and SIP application configuration exposed by the `voice` OpenAPI tag. Keep voice calls separate from messaging spaces and confirm destructive route or application changes.
+## Endpoint inventory
 
-For every request, consult the current OpenAPI and record:
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/projects/{projectId}/voice/sip-inbound/` | Return active inbound SIP config or `data: null`. Password is never returned; use `hasPassword`. |
+| `PATCH` | `/projects/{projectId}/voice/sip-inbound/` | Set or update the public SIP destination and optional digest credentials. |
+| `DELETE` | `/projects/{projectId}/voice/sip-inbound/` | Remove inbound routing configuration. |
+| `POST` | `/projects/{projectId}/voice/tokens` | Issue one short-lived Voice LightAuth token and `expiresIn`, regardless of shared/dedicated provisioning. |
 
-- HTTP method and path;
-- authentication;
-- required path, query, and body fields;
-- response envelope;
-- pagination and rate-limit behavior;
-- destructive, paid, or secret-bearing effects;
-- related CLI and SDK surface.
+All calls use project Basic auth. SIP inbound configuration is separate from outbound SIP authentication. Deleting the inbound config stops new inbound routing and requires explicit confirmation.
 
-Official OpenAPI: <https://spectrum.photon.codes/openapi/json>
+The SIP password is write-only. Do not assume a blank password in the GET response means no password; inspect `hasPassword`. Store any configured digest secret in a secret manager.
+
+Runtime calls use the SIP configuration described by the Spectrum Voice provider, not the HTTP management API.
+
+Official API pages: <https://photon.codes/docs/api-reference/voice/get-sip-inbound-config> and <https://photon.codes/docs/api-reference/voice/issue-voice-token>
