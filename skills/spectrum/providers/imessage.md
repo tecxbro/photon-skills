@@ -20,7 +20,7 @@ Explicit client routing is available when you intentionally want only a subset o
 ```ts
 imessage.config({
   clients: [{
-    address: "line-1.imsg.photon.codes:443",
+    address: "line-1.example.com:443",
     token: process.env.IMESSAGE_TOKEN!,
     phone: "+15551111111",
   }],
@@ -38,7 +38,7 @@ import { localIMessage } from "@spectrum-ts/imessage-local";
 const app = await Spectrum({ providers: [localIMessage.config()] });
 ```
 
-Local messages use `platform === "local_imessage"`. Local supports receive/send text, attachments, and contacts. App cards fall back to URLs. It does not support reactions, threaded replies, edits, unsend, read receipts, effects, group creation, streaming, backgrounds, rename, avatar, native contact-card sharing, or membership writes. Typing no-ops.
+Local messages use `platform === "local_imessage"`. Local supports receive/send text, attachments, and contacts. App cards fall back to URLs. It does not support reactions, threaded replies, edits, unsend, read receipts, effects, group creation, streaming, backgrounds, rename, avatar, native contact-card sharing, or membership writes. Typing is accepted as a no-op.
 
 ## Shared and dedicated lines
 
@@ -46,6 +46,8 @@ Local messages use `platform === "local_imessage"`. Local supports receive/send 
 |---|---|---|
 | Free / Pro | Shared pool; recipients may receive from different numbers | No group creation or inbound group-change events |
 | Business | Dedicated project line | Group creation and inbound group-change events supported |
+
+On shared-pool plans, recipients must be registered as project users before proactive outreach. A successful `space.create()` only resolves a transport object; it does not prove a later send is allowed or that the recipient consented.
 
 New or removed lines become visible on the next token renewal. Restart when a newly provisioned line must take effect immediately.
 
@@ -59,9 +61,15 @@ const existing = await im.space.get(chatGuid, { phone: "+15559999999" });
 
 Without a phone, `space.create()` chooses a dedicated line at random. `space.get()` requires `phone` when more than one dedicated line can own the chat.
 
-## Quotas
+## Quotas and consent
 
-Default documented limits are 5,000 outbound messages per server per day and 50 newly initiated conversations per line per day. Replies in existing conversations do not count as new conversations. Contact Photon before designing around a higher limit.
+Default cloud quotas are 5,000 messages per server per day and 50 newly initiated conversations per line per day. Replies in existing conversations do not count as new conversations. Contact Photon before designing around a higher limit.
+
+Do not treat transport access as permission for cold outreach. Initiate only after the recipient has opted in, honor stop requests, and design for genuine conversation rather than one-way blasts.
+
+## Capability check
+
+Optional actions follow Spectrum's documented native/fallback/skip/no-op/throw behavior. Read [`../capability-semantics.md`](../capability-semantics.md) and the exact feature reference before relying on reactions, replies, edits, backgrounds, group operations, or another provider-specific action.
 
 ## Feature references
 
