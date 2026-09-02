@@ -30,7 +30,7 @@ for (const relative of implementationFiles) {
   if (/(?:npm|pnpm|yarn|bun)\s+(?:add|install)[^\n]*\bchat-adapter-imessage\b/.test(text) && !text.includes("@photon-ai/chat-adapter-imessage")) {
     errors.push(`${relative}: installs the obsolete unscoped package`);
   }
-  if (/local\s*:\s*true|IMESSAGE_LOCAL|defaults?\s+local|local mode requires macOS/i.test(text)) {
+  if (/createiMessageAdapter\s*\(\s*\{\s*local\s*:\s*true|IMESSAGE_LOCAL|defaults?\s+local\s+unless|local mode requires macOS/i.test(text)) {
     errors.push(`${relative}: describes removed local adapter mode as supported`);
   }
 }
