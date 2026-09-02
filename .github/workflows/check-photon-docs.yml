@@ -41,6 +41,8 @@ jobs:
         run: node scripts/check-photon-docs-coverage.mjs
       - name: Check Spectrum OpenAPI tag ownership
         run: node scripts/check-photon-openapi.mjs
+      - name: Check current Chat SDK adapter contract
+        run: node scripts/check-photon-chat-adapter.mjs
       - name: Check internal Markdown links
         run: |
           node --input-type=module <<'NODE'
