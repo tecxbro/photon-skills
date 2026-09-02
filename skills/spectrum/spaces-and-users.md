@@ -5,6 +5,8 @@ A **Space** is a conversation. A **User** is a platform participant. Both carry 
 ## Space operations
 
 ```ts
+import { attachment } from "spectrum-ts";
+
 await space.send("Hello", attachment("./photo.jpg"));
 await space.startTyping();
 await space.stopTyping();
@@ -15,7 +17,7 @@ await space.responding(async () => {
 });
 ```
 
-`responding()` guarantees the stop-typing signal runs even when the callback throws. Provider-specific unsupported operations raise `UnsupportedError`; best-effort features such as typing may silently no-op where documented.
+`responding()` guarantees the stop-typing signal runs even when the callback throws.
 
 Universal space actions include:
 
@@ -32,6 +34,8 @@ Universal space actions include:
 - `leave()`;
 - `getMembers()` and provider-defined getters.
 
+These methods have different failure semantics. Send-routed operations normally warn and skip when a provider reports `UnsupportedError`; some controls are accepted no-ops. Resolvers and platform-wise reads such as `space.create`, `space.get`, `getMembers`, and `getAvatar` surface failures to the caller. Read [`capability-semantics.md`](./capability-semantics.md) before treating a resolved promise as proof that a platform performed an optional action.
+
 ## Resolve users and create spaces
 
 ```ts
@@ -46,6 +50,8 @@ const group = await im.space.create([alice, bob]);
 const existing = await im.space.get("any;-;+15551111111");
 ```
 
-Platform IDs are provider-specific. For iMessage, use an E.164 phone number or email when resolving a user; do not assume the same identifier format works for Slack, Telegram, or WhatsApp.
+Platform IDs are provider-specific. For iMessage, use an E.164 phone number or email when resolving a user; do not assume the same identifier format works for Telegram, WhatsApp, or another provider.
+
+Creating a space is a transport path, not permission to contact someone. Initiate only after the recipient has opted in, and read the selected provider's routing, plan, and quota constraints before proactive sends.
 
 Official source: <https://photon.codes/docs/spectrum-ts/spaces-and-users>
