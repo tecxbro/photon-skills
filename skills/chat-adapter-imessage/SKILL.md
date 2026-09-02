@@ -1,34 +1,34 @@
 ---
 name: chat-adapter-imessage
 description: >
-  Connect Chat SDK or Vercel Chat SDK bots to iMessage with the current Spectrum-backed adapter. Use for createiMessageAdapter, new Chat with adapters, Spectrum Cloud, self-hosted current Advanced iMessage, local macOS, signed Chat SDK webhooks, gateway listeners, native polls from modals, tapbacks, effects, attachments, edits, deployment, and troubleshooting. Also use when checking whether cards, streaming, history, or cold group sends are supported. Keywords: Chat SDK, Vercel Chat SDK, iMessage adapter, webhook, gateway listener, poll, tapback, effect, projectId, projectSecret, app card, mini app card.
+  Connect Chat SDK bots to iMessage with the current Spectrum-backed @photon-ai/chat-adapter-imessage package. Use for createiMessageAdapter, new Chat with adapters, Spectrum Cloud, self-hosted current Advanced iMessage, signed Chat SDK webhooks, gateway listeners, native polls from modals, tapbacks, effects, attachments, edits, unsend, read state, voice messages, mini-app cards, chat backgrounds, deployment, and troubleshooting. Also use when checking whether streaming, history, thread metadata, or a provider-specific action is supported. Keywords: Chat SDK, iMessage adapter, webhook, gateway listener, poll, tapback, effect, projectId, projectSecret, app card, mini app card.
 license: MIT
 metadata:
   author: photon-hq
-  version: '2.0.0'
+  version: '2.1.0'
 ---
 
 # Chat SDK iMessage adapter
 
-The current `chat-adapter-imessage` integration is backed by Spectrum and supports three modes:
+Use `@photon-ai/chat-adapter-imessage` when an application is already structured around Chat SDK. The current adapter is backed by Spectrum and supports two connection modes:
 
 1. **Spectrum Cloud** — recommended; runs anywhere, including serverless.
 2. **Self-hosted** — connects to a current `@photon-ai/advanced-imessage` gRPC endpoint.
-3. **Local** — runs on macOS with local Messages access.
+
+Local on-device mode has been removed from this adapter. For local macOS automation, use Spectrum's separate `@spectrum-ts/imessage-local` provider or `@photon-ai/imessage-kit` directly.
 
 ```bash
-pnpm add chat chat-adapter-imessage
+pnpm add chat @photon-ai/chat-adapter-imessage
 ```
 
 ```ts
 import { Chat } from "chat";
-import { createiMessageAdapter } from "chat-adapter-imessage";
+import { createiMessageAdapter } from "@photon-ai/chat-adapter-imessage";
 
 const bot = new Chat({
   userName: "mybot",
   adapters: {
     imessage: createiMessageAdapter({
-      local: false,
       projectId: process.env.IMESSAGE_PROJECT_ID,
       projectSecret: process.env.IMESSAGE_PROJECT_SECRET,
     }),
@@ -36,16 +36,16 @@ const bot = new Chat({
 });
 ```
 
+Do not use the obsolete single-adapter constructor, the unscoped `chat-adapter-imessage` package, or `local: true`. Do not describe webhooks as unsupported.
+
 ## Receiving modes
 
 | Environment | Preferred mode |
 |---|---|
 | Serverless route | Signed webhook through `bot.webhooks.imessage` |
 | Long-running worker | `bot.adapters.imessage.startGatewayListener(...)` |
-| Local development | Local listener or a tunnelled cloud webhook |
-| Existing Chat SDK bot | The bot's registered iMessage webhook |
-
-Do not use the obsolete single-adapter constructor. Do not describe webhooks as unsupported.
+| Local development against Spectrum Cloud | Cloud webhook or gateway listener |
+| Existing Chat SDK bot | The bot's registered iMessage adapter webhook |
 
 ## Topic routing
 
