@@ -13,7 +13,7 @@ Verified on **2026-09-02** against <https://photon.codes/docs/llms.txt>. The can
 | Other current providers | Telegram, Terminal, WhatsApp Business, and Voice pages | `spectrum` | `skills/spectrum/providers/` | Covered | Voice includes outbound, inbound, and troubleshooting guidance. |
 | Supplemental provider guidance | Slack | `spectrum` | `skills/spectrum/providers/slack.md` | Supplemental | Retained for the shipped provider package but not counted as a current page in `llms.txt`. |
 | Webhooks | `/docs/spectrum-ts/webhooks` | `spectrum` | `skills/spectrum/webhooks.md` | Covered | Owns the SDK request adapter; registration and delivery semantics route to `photon-webhooks`. |
-| Integrations | Chat SDK and eve | `spectrum`, `chat-adapter-imessage` | `skills/spectrum/integrations/`, `skills/chat-adapter-imessage/` | Covered | eve covers the Photon channel, Vercel Connect, portable credentials, and webhook route. |
+| Integrations | Chat SDK and eve | `spectrum`, `chat-adapter-imessage` | `skills/spectrum/integrations/`, `skills/chat-adapter-imessage/` | Covered with drift note | eve follows the indexed page. The Chat SDK skill follows the currently published scoped package where the generated page still describes its previous unscoped release. |
 | Customization and lifecycle | Custom platforms, custom events, lifecycle | `spectrum` | `skills/spectrum/custom-platforms.md`, `custom-events-and-lifecycle.md` | Covered | Current provider-contract and recovery guidance. |
 | Best practices | `/docs/best-practices/**` | `spectrum` | `skills/spectrum/best-practices/` | Covered | Architecture, inbound pipeline, recovery/state, and iMessage deliverability. |
 
@@ -44,7 +44,7 @@ Verified on **2026-09-02** against <https://photon.codes/docs/llms.txt>. The can
 | Current Advanced iMessage | `/docs/advanced-kits/imessage/**` | `imessage` | `skills/imessage/advanced/` | Covered | Uses `@photon-ai/advanced-imessage` and isolates direct platform features by topic. |
 | Local open-source iMessage | `/docs/opensource/imessage-kit` | `imessage` | `skills/imessage/opensource-imessage-kit.md` | Covered | macOS, Full Disk Access, local send/query/watch, and cleanup. |
 | Legacy iMessage | `/docs/legacy/imessage` | `imessage` | `skills/imessage/legacy-advanced-imessage-kit.md` | Covered | Legacy package is maintenance-only and never the default path. |
-| Chat SDK adapter | `/docs/integrations/chat-sdk` | `chat-adapter-imessage` | `skills/chat-adapter-imessage/` | Covered | Current constructor, cloud/self-hosted/local modes, webhooks, listener, features, and limitations. |
+| Chat SDK adapter | `/docs/integrations/chat-sdk` | `chat-adapter-imessage` | `skills/chat-adapter-imessage/` | Covered with source override | The live page currently describes unscoped `chat-adapter-imessage` 1.1.0 and local mode; the skill follows published `@photon-ai/chat-adapter-imessage` 3.2.0, its types, tests, and repository README. |
 | WhatsApp Business SDK | `/docs/advanced-kits/whatsapp/**` | `whatsapp-business` | `skills/whatsapp-business/` | Covered | Messages, interactions, templates, events, media, and typed errors. |
 
 ## Utilities
@@ -76,6 +76,7 @@ Verified on **2026-09-02** against <https://photon.codes/docs/llms.txt>. The can
 - Current Photon documentation pages represented in the canonical map: **98**.
 - OpenAPI category/tag ownership entries: **13**.
 - Supplemental package-derived page mappings: **2**.
+- Known semantic source overrides: **1** (`chat-adapter-imessage`, published package 3.2.0 over the older generated page).
 - Missing owner files at verification time: **0**.
 - Unapproved duplicate canonical owners: **0**.
 - Stale current-page mappings at verification time: **0**.
