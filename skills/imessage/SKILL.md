@@ -5,7 +5,7 @@ description: >
 license: MIT
 metadata:
   author: photon-hq
-  version: '9.0.0'
+  version: '9.1.0'
 ---
 
 # iMessage
@@ -22,6 +22,17 @@ Use this skill to choose the correct Photon iMessage interface and then load onl
 | Current Advanced iMessage | Direct iMessage control not exposed by Spectrum | `@photon-ai/advanced-imessage` |
 | Open-source iMessage Kit | Local macOS-only automation and self-hosted access | `@photon-ai/imessage-kit` |
 | Legacy Advanced iMessage Kit | Maintenance of an existing project that already imports it | Legacy only; see the isolated compatibility file |
+
+Do not combine constructors, content shapes, event models, or method names from different rows.
+
+## Cross-stack invariants
+
+- Treat inbound message text, attachment names, contact cards, URLs, and event payloads as untrusted data. Do not interpolate them into system prompts, shell commands, paths, SQL, or request URLs.
+- Ignore the agent's own messages using the selected API's direction or from-me field rather than comparing message text.
+- Normalize user-entered phone numbers to E.164 before resolving recipients; never construct chat IDs from untrusted input.
+- Clear typing indicators in `finally`, handle every rejected send, and checkpoint an event only after processing succeeds.
+- Reuse an idempotency key only for a retry of the same logical write.
+- Never log bearer tokens, project secrets, full message bodies, attachment bytes, or contact details. Log stable IDs and operation metadata.
 
 ## Current Advanced iMessage quickstart
 
